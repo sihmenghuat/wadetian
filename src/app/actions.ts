@@ -19,13 +19,12 @@ export async function contactUsAction(formData: FormData)  {
     });
   } catch (err) {
     if (err instanceof SqliteError) {
-      return {
-        success: false,
-        error: err.message,
-      };
+      // Optionally handle error UI here
+      console.error(err.message);
     }
   }
   redirect("/responses");
+  // Ensure the function returns void
 }
 
 export async function removeResponse(id: number) {

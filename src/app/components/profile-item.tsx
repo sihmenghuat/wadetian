@@ -15,7 +15,7 @@ export function ProfileItem({ response }: ResponseItemProps) {
         <p className="text-gray-600 text-sm mb-2">Email: {response.email}</p>
         <p className="text-gray-600">Hobby: {response.hobby}</p>
         <p></p>
-        <p className="font-semibold mb-1">Galney Points: {response.points}</p>
+        <p className="font-semibold mb-1">Points: {response.points}</p>
       </div>
     </li>
   );
