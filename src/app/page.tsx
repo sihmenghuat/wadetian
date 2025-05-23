@@ -1,5 +1,5 @@
 import Image from "next/image";
-import {ContactForm} from "@/app/components/contact-form";
+import {LoginForm} from "@/app/components/contact-login";
 import Link from "next/link";
 
 export default function Home() {
@@ -15,62 +15,22 @@ export default function Home() {
           priority
         />
     <div className="flex flex-col justify-center items-center gap-5 border-2 rounded-md p-6">
-      <ContactForm />
+      <LoginForm />
       <Link
         className="text-center underline font-semibold text-lg"
-        href="/responses"
+        href="/profileCreate"
       >
-        View responses
+        Create New Account
       </Link>
-    </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href=""
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href=""
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href=""
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <Link
+        className="text-center underline font-semibold text-lg"
+        href="/forgot"
+      >
+        Forgot Password
+      </Link>
+    </div></main>
     </div>
   );
 }
+
+      

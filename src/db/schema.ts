@@ -3,10 +3,13 @@ import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
 export const responses = sqliteTable("responses", {
     id: integer("id").primaryKey(),
-    name: text("name").notNull(),
-    email: text("email").notNull(),
-    message: text("message").notNull(),
-  }); 
+    userid: text("userid").notNull(),
+    pin: integer("pin").notNull(),
+    contactno: text("contactno"),
+    email: text("email"),
+    hobby: text("hobby"),
+    points: integer("points"), // new field for number of points
+  });
 
 export const menuItems = sqliteTable('menu_items', {
   id: integer('id').primaryKey(),
