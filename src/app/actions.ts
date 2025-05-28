@@ -13,7 +13,7 @@ export async function contactUsAction(formData: FormData)  {
     await db.insert(responses).values({
       userid: formData.get("userid") as string,
       pin: Number(formData.get("pin")) as number,
-      contactno: formData.get("contactno") as string,
+      contactno: formData.get("userid") as string,
       email: formData.get("email") as string,
       hobby: formData.get("hobby") as string,
     });

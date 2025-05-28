@@ -1,40 +1,43 @@
 // db/schema.ts
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { create } from 'domain';
+import { pgTable, text, integer, doublePrecision, timestamp, serial } from 'drizzle-orm/pg-core';
 
-export const responses = sqliteTable("responses", {
-    id: integer("id").primaryKey(),
+export const responses = pgTable("responses", {
+    id: serial("id").primaryKey(),
     userid: text("userid").notNull(),
     pin: integer("pin").notNull(),
     contactno: text("contactno"),
     email: text("email"),
     hobby: text("hobby"),
-    points: integer("points"), // new field for number of points
-  });
+    points: integer("points"),
+    createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: false }).notNull().defaultNow(),
+});
 
-export const menuItems = sqliteTable('menu_items', {
-  id: integer('id').primaryKey(),
+export const menuItems = pgTable('menu_items', {
+  id: serial('id').primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
-  price: real('price').notNull(),
+  price: doublePrecision('price').notNull(),
   category: text('category').notNull(),
   imageUrl: text('image_url'),
 });
 
-export const orders = sqliteTable('orders', {
-  id: integer('id').primaryKey(),
+export const orders = pgTable('orders', {
+  id: serial('id').primaryKey(),
   customerName: text('customer_name').notNull(),
   customerEmail: text('customer_email'),
-  total: real('total').notNull(),
+  total: doublePrecision('total').notNull(),
   status: text('status').notNull().default('pending'),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: false }).notNull(),
 });
 
-export const orderItems = sqliteTable('order_items', {
-  id: integer('id').primaryKey(),
+export const orderItems = pgTable('order_items', {
+  id: serial('id').primaryKey(),
   orderId: integer('order_id').references(() => orders.id),
   menuItemId: integer('menu_item_id').references(() => menuItems.id),
   quantity: integer('quantity').notNull(),
-  price: real('price').notNull(),
+  price: doublePrecision('price').notNull(),
 });
 
 export type ResponseSelect = typeof responses.$inferSelect;
