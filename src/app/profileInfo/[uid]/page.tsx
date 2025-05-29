@@ -1,12 +1,12 @@
 import { db } from "@/db";
-import { ProfileItem } from "../components/profile-item";
+import { ProfileItem } from "../../components/profile-item";
 import { responses } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
 
-export default async function ProfileItemPage({ searchParams }: { searchParams: { userid?: string } }) {
-  const userid = searchParams.userid;
+export default async function ProfileItemPage({ params }: { params: { uid?: string } }) {
+  const userid = typeof params.uid === "string" ? params.uid : "";
   const resps = userid ? await getResponses(userid) : [];
   console.log("User ID:", userid);
 
