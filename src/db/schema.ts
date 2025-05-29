@@ -1,5 +1,4 @@
 // db/schema.ts
-import { create } from 'domain';
 import { pgTable, text, integer, doublePrecision, timestamp, serial } from 'drizzle-orm/pg-core';
 
 export const responses = pgTable("responses", {

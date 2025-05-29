@@ -2,11 +2,12 @@
 
 import { db } from "@/db";
 import { responses } from "@/db/schema";
-import { SqliteError } from "better-sqlite3";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { permanentRedirect } from "next/navigation";
+import postgres from "postgres";
+import { createSession, deleteSession } from "@/app/lib/session";
 
 export async function contactUsAction(formData: FormData)  {
   try {
@@ -18,7 +19,7 @@ export async function contactUsAction(formData: FormData)  {
       hobby: formData.get("hobby") as string,
     });
   } catch (err) {
-    if (err instanceof SqliteError) {
+    if (err instanceof postgres.PostgresError) {
       // Optionally handle error UI here
       console.error(err.message);
     }
@@ -33,7 +34,7 @@ export async function removeResponse(id: number) {
     revalidatePath("/responses");
     console.log("User deleted");
   } catch (err) {
-    if (err instanceof SqliteError) {
+    if (err instanceof postgres.PostgresError) {
       console.log(err.message);
     }
   }
@@ -63,7 +64,7 @@ const userid = formData.get("userid") as string; // Moved declaration here
   }
 
   } catch (err) {
-    if (err instanceof SqliteError) {
+    if (err instanceof postgres.PostgresError) {
       console.log(err.message);
     }
   }
@@ -72,6 +73,12 @@ const userid = formData.get("userid") as string; // Moved declaration here
   if (shouldRedirectToProfile) {
     permanentRedirect("/profileCreate");
   } else if (shouldRedirectToResponses) {
+     await createSession(userid);
     permanentRedirect(`/profileInfo?userid=${userid}`);
   }
+}
+
+export async function logout() {
+  await deleteSession();
+  redirect("/");
 }
