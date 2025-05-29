@@ -74,11 +74,15 @@ const userid = formData.get("userid") as string; // Moved declaration here
     permanentRedirect("/profileCreate");
   } else if (shouldRedirectToResponses) {
      await createSession(userid);
-    permanentRedirect(`/profileInfo?userid=${userid}`);
+    permanentRedirect(`/profileInfo/${userid}`);
   }
 }
 
 export async function logout() {
   await deleteSession();
   redirect("/");
+}
+
+export async function getResponses(userid: string) {
+  return await db.select().from(responses).where(eq(responses.userid, userid));
 }
