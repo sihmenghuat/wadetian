@@ -1,7 +1,6 @@
-import { db } from "@/db";
+import { getResponses } from "@/app/actions";
+import { LogoutForm } from "@/app/components/contact-logout";
 import { ProfileItem } from "../../components/profile-item";
-import { responses } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -24,13 +23,8 @@ export default async function ProfileItemPage({ params }: { params: { uid?: stri
       ) : (
         <p className="text-center text-gray-500 py-4">Profile Not found.</p>
       )}
+      <LogoutForm />
       <Link
-        className="text-center underline font-semibold text-lg"
-        href="/"
-      >
-        Logout
-      </Link>
-            <Link
         className="text-center underline font-semibold text-lg"
         href="/profileEdit"
       >
@@ -87,8 +81,4 @@ export default async function ProfileItemPage({ params }: { params: { uid?: stri
       </footer>
     </div>   
   );
-}
-
-async function getResponses(userid: string) {
-  return await db.select().from(responses).where(eq(responses.userid, userid));
 }
