@@ -3,9 +3,19 @@ import { LogoutForm } from "@/app/components/contact-logout";
 import { ProfileItem } from "../../components/profile-item";
 import Image from "next/image";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { decrypt } from "@/app/lib/session";
+import { permanentRedirect } from "next/navigation";
 
-export default async function ProfileItemPage({ params }: { params: { uid?: string } }) {
-  const userid = typeof params.uid === "string" ? params.uid : "";
+export default async function ProfileItemPage() {
+  const cookie = (await cookies()).get("session")?.value;
+  const session = await decrypt(cookie);
+console.log("Session:", session);
+  if (!session || !session.userId) {
+    permanentRedirect(`/`);
+  }
+  console.log("Session userId:", session.userId);
+  const userid = session.userId.toString();
   const resps = userid ? await getResponses(userid) : [];
   console.log("User ID:", userid);
 
