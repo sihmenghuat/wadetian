@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { responses, sessiondb } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { permanentRedirect } from "next/navigation";
@@ -23,8 +23,9 @@ export async function contactUsAction(formData: FormData)  {
         userid: formData.get("userid") as string,
         status: "active",
         logincount: +1,
-      });    
-    }); 
+      });
+      await createSession(formData.get("userid") as string);   
+    });
   } catch (err) {
     if (err instanceof postgres.PostgresError) {
       // Optionally handle error UI here
@@ -80,7 +81,14 @@ const userid = formData.get("userid") as string; // Moved declaration here
   if (shouldRedirectToProfile) {
     permanentRedirect("/profileCreate");
   } else if (shouldRedirectToResponses) {
-     await createSession(userid);
+    await createSession(userid);
+    await db
+        .update(sessiondb)
+        .set({
+          logincount: sql`${sessiondb.logincount} + 1`,
+          lastlogin: new Date(),
+        })
+        .where(eq(sessiondb.userid, userid));
     permanentRedirect(`/profileInfo/${userid}`);
   }
 }
@@ -91,7 +99,7 @@ export async function logout(userid: string) {
   await db
     .update(sessiondb)
     .set({
-      logincount: -1,
+      logincount: sql`${sessiondb.logincount} - 1`,
       lastlogout: new Date(),
     })
     .where(eq(sessiondb.userid, userid));
