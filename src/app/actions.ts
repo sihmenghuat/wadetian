@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { responses } from "@/db/schema";
+import { responses, sessiondb } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -11,13 +11,20 @@ import { createSession, deleteSession } from "@/app/lib/session";
 
 export async function contactUsAction(formData: FormData)  {
   try {
-    await db.insert(responses).values({
-      userid: formData.get("userid") as string,
-      pin: Number(formData.get("pin")) as number,
-      contactno: formData.get("userid") as string,
-      email: formData.get("email") as string,
-      hobby: formData.get("hobby") as string,
-    });
+    await db.transaction(async (tx) => {
+      await tx.insert(responses).values({
+        userid: formData.get("userid") as string,
+        pin: Number(formData.get("pin")) as number,
+        contactno: formData.get("userid") as string,
+        email: formData.get("email") as string,
+        hobby: formData.get("hobby") as string,
+      });
+      await tx.insert(sessiondb).values({
+        userid: formData.get("userid") as string,
+        status: "active",
+        logincount: +1,
+      });    
+    }); 
   } catch (err) {
     if (err instanceof postgres.PostgresError) {
       // Optionally handle error UI here
@@ -78,8 +85,16 @@ const userid = formData.get("userid") as string; // Moved declaration here
   }
 }
 
-export async function logout() {
+export async function logout(userid: string) {
+  console.log("Logging out user:", userid);
   await deleteSession();
+  await db
+    .update(sessiondb)
+    .set({
+      logincount: -1,
+      lastlogout: new Date(),
+    })
+    .where(eq(sessiondb.userid, userid));
   redirect("/");
 }
 

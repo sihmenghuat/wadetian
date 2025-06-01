@@ -12,6 +12,7 @@ export const responses = pgTable("responses", {
     createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: false }).notNull().defaultNow(),
 });
+export type ResponseSelect = typeof responses.$inferSelect;
 
 export const menuItems = pgTable('menu_items', {
   id: serial('id').primaryKey(),
@@ -36,9 +37,19 @@ export const orderItems = pgTable('order_items', {
   orderId: integer('order_id').references(() => orders.id),
   menuItemId: integer('menu_item_id').references(() => menuItems.id),
   quantity: integer('quantity').notNull(),
-  price: doublePrecision('price').notNull(),
+  price: doublePrecision('price').notNull().default(0),
 });
 
-export type ResponseSelect = typeof responses.$inferSelect;
+export const sessiondb = pgTable("sessiondb", {
+    id: serial("id").primaryKey(),
+    userid: text("userid").notNull(),
+    status: text("status").notNull(),
+    balance: integer("balance").notNull().default(0),
+    logincount: integer("logincount").notNull().default(0),
+    lasttransdate: timestamp("lasttransdate", { withTimezone: true }).notNull().defaultNow(),
+    lastlogin: timestamp("lastlogin", { withTimezone: true }).notNull().defaultNow(),
+    lastlogout: timestamp("lastlogout", { withTimezone: true }).notNull().defaultNow(),
+    expirydate: timestamp("expirydate", { withTimezone: true }).notNull().defaultNow(),
+});
 
 

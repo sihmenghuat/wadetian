@@ -33,7 +33,7 @@ console.log("Session:", session);
       ) : (
         <p className="text-center text-gray-500 py-4">Profile Not found.</p>
       )}
-      <LogoutForm />
+      <LogoutForm userid={userid} />
       <Link
         className="text-center underline font-semibold text-lg"
         href="/profileEdit"
