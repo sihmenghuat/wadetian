@@ -95,15 +95,22 @@ const userid = formData.get("userid") as string; // Moved declaration here
 
 export async function logout(userid: string) {
   console.log("Logging out user:", userid);
-  await deleteSession();
-  await db
-    .update(sessiondb)
-    .set({
-      logincount: sql`${sessiondb.logincount} - 1`,
-      lastlogout: new Date(),
-    })
-    .where(eq(sessiondb.userid, userid));
-  redirect("/");
+  try {
+    await Promise.all([
+      deleteSession(),
+      db
+        .update(sessiondb)
+        .set({
+          logincount: sql`${sessiondb.logincount} - 1`,
+          lastlogout: new Date(),
+        })
+        .where(eq(sessiondb.userid, userid))
+    ]);
+    redirect("/");
+  } catch (err) {
+    console.error("Logout failed:", err);
+    throw err; // Optionally handle error UI here
+  }
 }
 
 export async function getResponses(userid: string) {

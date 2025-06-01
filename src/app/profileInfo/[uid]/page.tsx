@@ -45,9 +45,9 @@ console.log("Session:", session);
     <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="/pay"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/qrcodePay"
+//          target="_blank"
+//          rel="noopener noreferrer"
         >
           <Image
             aria-hidden
@@ -60,9 +60,9 @@ console.log("Session:", session);
         </a>
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="/collect"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/qrcodeCollect"
+//          target="_blank"
+//          rel="noopener noreferrer"
         >
           <Image
             aria-hidden
@@ -76,8 +76,8 @@ console.log("Session:", session);
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href={`/qrcode/${userid}`}
-          target="_blank"
-          rel="noopener noreferrer"
+//          target="_blank"
+//          rel="noopener noreferrer"
         >
           <Image
             aria-hidden
