@@ -1,91 +1,36 @@
-"use client";
 import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import type { Html5Qrcode } from "html5-qrcode";
+import { cookies } from "next/headers";
+import { decrypt } from "@/app/lib/session";
+import { permanentRedirect } from "next/navigation";
+import QrCodePay from "../components/qrcode-pay";
+import { qrcodePay } from "../actions";
 
-export default function QrCodePay() {
-  const [qrData, setQrData] = useState("");
-  const [scanError, setScanError] = useState("");
-  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
-  const qrRegionId = "qr-reader-region";
-
-  useEffect(() => {
-    let html5QrCode: Html5Qrcode | null = null;
-    if (typeof window !== "undefined") {
-      import("html5-qrcode").then(({ Html5Qrcode }) => {
-        html5QrCode = new Html5Qrcode(qrRegionId);
-        html5QrCodeRef.current = html5QrCode;
-        Html5Qrcode.getCameras().then((devices: { id: string }[]) => {
-          if (devices && devices.length) {
-            if (html5QrCode) {
-              html5QrCode
-                .start(
-                  devices[0].id,
-                  {
-                    fps: 10,
-                    qrbox: 256,
-                  },
-                  (decodedText: string) => {
-                    setQrData(decodedText);
-                    setScanError("");
-                    html5QrCode?.stop();
-                  },
-                  (errorMessage: string) => {
-                    console.warn("QR Code scan error:", errorMessage);
-                    setScanError(errorMessage);
-                  }
-                )
-                .catch((err: { message?: string }) => setScanError(err?.message || "Camera error"));
-            }
-          } else {
-            setScanError("No camera found");
-          }
-        });
-      });
-    }
-    return () => {
-      if (html5QrCodeRef.current) {
-        html5QrCodeRef.current.stop().catch(() => {});
-        html5QrCodeRef.current.clear();
-      }
-    };
-  }, []);
+export default async function QRcodePayPage() {
+  const cookie = (await cookies()).get("session")?.value;
+  const session = await decrypt(cookie);
+console.log("Session:", session);
+  if (!session || !session.userId) {
+    permanentRedirect(`/`);
+  }
+  console.log("Session userId:", session.userId);
+  const userid = session.userId.toString();
+  console.log("User ID:", userid);
 
   return (
     <div>
       <main>
-        <div className="flex flex-col items-center justify-center border-2 gap-5 rounded-md p-6">
-          <h1 className="text-2xl font-bold mb-4">Scan QR Code to Pay</h1>
-          {/* QR Code Reader Section */}
-          <div className="my-4 w-full flex flex-col items-center">
-            <h2 className="text-lg font-semibold mb-2">Scan a QR Code</h2>
-            <div
-              id={qrRegionId}
-              className="w-64 h-48 mb-2 bg-gray-200 rounded"
-            />
-            {qrData && (
-              <div className="p-2 bg-gray-100 rounded text-sm w-full break-words">
-                <strong>QR Data:</strong> {qrData}
-              </div>
-            )}
-            {scanError && (
-              <div className="text-red-500 text-xs mt-1">Please scan again!</div>
-            )}
-          </div>
-          <Link
-            className="text-center underline font-semibold text-lg"
-            href="/profileInfo/4567890"
-          >
-            Home
-          </Link>
-          <Link
-            className="text-center underline font-semibold text-lg"
-            href="/profileEdit"
-          >
-            Edit Profile
-          </Link>
-        </div>
+      <div className="flex flex-col justify-center items-center border-2 gap-5 rounded-md p-6">
+      <h2 className="text-2xl font-bold text-center">My Title</h2>
+      <QrCodePay userid={userid} />
+      <form className="flex items-center flex-col gap-3" action={qrcodePay}>
+      <button
+        type="submit"
+        className="text-lg w-full bg-blue-800 text-white rounded-md p-2.5 focus:ring-2 focus:ring-blue-300 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:ring-gray-300 focus:outline-none"
+      >
+        Submit
+      </button>
+    </form>
+    </div>
         <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
           <a
             className="flex items-center gap-2 hover:underline hover:underline-offset-4"

@@ -116,3 +116,30 @@ export async function logout(userid: string) {
 export async function getResponses(userid: string) {
   return await db.select().from(responses).where(eq(responses.userid, userid));
 }
+
+export async function qrcodePay(formData: FormData)  {
+  try {
+    await db.transaction(async (tx) => {
+      await tx.insert(responses).values({
+        userid: formData.get("userid") as string,
+        pin: Number(formData.get("pin")) as number,
+        contactno: formData.get("userid") as string,
+        email: formData.get("email") as string,
+        hobby: formData.get("hobby") as string,
+      });
+      await tx.insert(sessiondb).values({
+        userid: formData.get("userid") as string,
+        status: "active",
+        logincount: +1,
+      });
+      await createSession(formData.get("userid") as string);   
+    });
+  } catch (err) {
+    if (err instanceof postgres.PostgresError) {
+      // Optionally handle error UI here
+      console.error(err.message);
+    }
+  }
+  redirect("/responses");
+  // Ensure the function returns void
+}
