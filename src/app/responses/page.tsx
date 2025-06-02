@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { ResponseItem } from "../components/response-item";
-import { responses } from "@/db/schema";
+import { users } from "@/db/schema";
 
 export default async function ResponsesPage() {
   const resps = await getResponses();
@@ -11,16 +11,16 @@ export default async function ResponsesPage() {
       {resps.length > 0 ? (
         <ul className="space-y-4">
           {resps.map(resp => (
-            <ResponseItem response={resp} key={resp.id} />
+            <ResponseItem user={resp} key={resp.id} />
           ))}
         </ul>
       ) : (
-        <p className="text-center text-gray-500 py-4">No responses yet.</p>
+        <p className="text-center text-gray-500 py-4">No users yet.</p>
       )}
     </div>
   );
 }
 
 async function getResponses() {
-  return await db.select().from(responses);
+  return await db.select().from(users);
 }

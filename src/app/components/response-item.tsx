@@ -1,21 +1,21 @@
-import type { ResponseSelect } from "@/db/schema";
-import { removeResponse } from "../actions";
+import type { UserSelect } from "@/db/schema";
+import { removeUser } from "../actions";
 
-interface ResponseItemProps {
-  response: ResponseSelect;
+interface UserItemProps {
+  user: UserSelect;
 }
 
-export function ResponseItem({ response }: ResponseItemProps) {
-  const removeResponseWithId = removeResponse.bind(null, response.id)
+export function ResponseItem({ user }: UserItemProps) {
+  const removeResponseWithId = removeUser.bind(null, user.id)
 
   return (
     <li className="bg-gray-50 border border-gray-300 rounded relative">
       <div className="p-4">
-        <p className="font-semibold mb-1">{response.userid}</p>
-        <p className="text-gray-600 text-sm mb-2">{response.pin}</p>
-        <p className="text-gray-600 text-sm mb-2">{response.contactno}</p>
-        <p className="text-gray-600 text-sm mb-2">{response.email}</p>
-        <p className="text-gray-800">{response.hobby}</p>
+        <p className="font-semibold mb-1">{user.userid}</p>
+        <p className="text-gray-600 text-sm mb-2">{user.pin}</p>
+        <p className="text-gray-600 text-sm mb-2">{user.contactno}</p>
+        <p className="text-gray-600 text-sm mb-2">{user.email}</p>
+        <p className="text-gray-800">{user.hobby}</p>
       </div>
       <form action={removeResponseWithId}>
       <button

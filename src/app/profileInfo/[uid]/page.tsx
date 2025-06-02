@@ -27,7 +27,7 @@ console.log("Session:", session);
       {resps.length > 0 ? (
         <ul className="space-y-4">
           {resps.map(resp => (
-            <ProfileItem response={resp} key={resp.id} />
+            <ProfileItem user={resp} key={resp.id} />
           ))}
         </ul>
       ) : (

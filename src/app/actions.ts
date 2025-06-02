@@ -1,18 +1,19 @@
 "use server";
 
 import { db } from "@/db";
-import { responses, sessiondb } from "@/db/schema";
+import { users, sessiondb, transdb, issuerdb } from "@/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { permanentRedirect } from "next/navigation";
 import postgres from "postgres";
 import { createSession, deleteSession } from "@/app/lib/session";
+import { PgInteger } from "drizzle-orm/pg-core";
 
 export async function contactUsAction(formData: FormData)  {
   try {
     await db.transaction(async (tx) => {
-      await tx.insert(responses).values({
+      await tx.insert(users).values({
         userid: formData.get("userid") as string,
         pin: Number(formData.get("pin")) as number,
         contactno: formData.get("userid") as string,
@@ -36,9 +37,9 @@ export async function contactUsAction(formData: FormData)  {
   // Ensure the function returns void
 }
 
-export async function removeResponse(id: number) {
+export async function removeUser(id: number) {
   try {
-    await db.delete(responses).where(eq(responses.id, id));
+    await db.delete(users).where(eq(users.id, id));
     revalidatePath("/responses");
     console.log("User deleted");
   } catch (err) {
@@ -55,12 +56,12 @@ const userid = formData.get("userid") as string; // Moved declaration here
   try {
     const result = await db
       .select({
-        id: responses.id
+        id: users.id
       }) // Specify the columns you want to select
-      .from(responses)
+      .from(users)
       .where(and(
-        eq(responses.userid, userid),
-        eq(responses.pin, Number(formData.get("pin")))
+        eq(users.userid, userid),
+        eq(users.pin, Number(formData.get("pin")))
       ));
       
     console.log(result.length < 1);
@@ -114,25 +115,26 @@ export async function logout(userid: string) {
 }
 
 export async function getResponses(userid: string) {
-  return await db.select().from(responses).where(eq(responses.userid, userid));
+  return await db.select().from(users).where(eq(users.userid, userid));
 }
 
 export async function qrcodePay(formData: FormData)  {
   try {
     await db.transaction(async (tx) => {
-      await tx.insert(responses).values({
+      await tx.insert(transdb).values({
         userid: formData.get("userid") as string,
-        pin: Number(formData.get("pin")) as number,
-        contactno: formData.get("userid") as string,
-        email: formData.get("email") as string,
-        hobby: formData.get("hobby") as string,
+        fromid: formData.get("fromid") as string,
+        issuerid: formData.get("issuerid") as string,
+        transdesc: formData.get("userid") as string,
+        transamount: Number(formData.get("balance")),
       });
-      await tx.insert(sessiondb).values({
+      await tx.insert(issuerdb).values({
         userid: formData.get("userid") as string,
-        status: "active",
-        logincount: +1,
+        issuerid: formData.get("issuerid") as string,
+        balance: Number(formData.get("balance")),
+        lasttransdate: new Date(),
+        lasttransid: 0, // Assuming this is a placeholder, adjust as needed
       });
-      await createSession(formData.get("userid") as string);   
     });
   } catch (err) {
     if (err instanceof postgres.PostgresError) {
