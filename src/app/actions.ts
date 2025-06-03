@@ -107,11 +107,12 @@ export async function logout(userid: string) {
         })
         .where(eq(sessiondb.userid, userid))
     ]);
-    redirect("/");
   } catch (err) {
     console.error("Logout failed:", err);
     throw err; // Optionally handle error UI here
   }
+  console.log("User logged out successfully");
+  redirect("/");
 }
 
 export async function getResponses(userid: string) {
@@ -119,6 +120,34 @@ export async function getResponses(userid: string) {
 }
 
 export async function qrcodePay(formData: FormData)  {
+  try {
+    await db.transaction(async (tx) => {
+      await tx.insert(transdb).values({
+        userid: formData.get("userid") as string,
+        fromid: formData.get("fromid") as string,
+        issuerid: formData.get("issuerid") as string,
+        transdesc: formData.get("userid") as string,
+        transamount: Number(formData.get("balance")),
+      });
+      await tx.insert(issuerdb).values({
+        userid: formData.get("userid") as string,
+        issuerid: formData.get("issuerid") as string,
+        balance: Number(formData.get("balance")),
+        lasttransdate: new Date(),
+        lasttransid: 0, // Assuming this is a placeholder, adjust as needed
+      });
+    });
+  } catch (err) {
+    if (err instanceof postgres.PostgresError) {
+      // Optionally handle error UI here
+      console.error(err.message);
+    }
+  }
+  redirect("/responses");
+  // Ensure the function returns void
+}
+
+export async function qrcodeGen(formData: FormData)  {
   try {
     await db.transaction(async (tx) => {
       await tx.insert(transdb).values({

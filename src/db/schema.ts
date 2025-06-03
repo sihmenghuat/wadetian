@@ -1,5 +1,8 @@
 // db/schema.ts
+import { create } from 'domain';
 import { pgTable, text, integer, doublePrecision, timestamp, serial } from 'drizzle-orm/pg-core';
+import { getHash } from 'next/dist/server/image-optimizer';
+import { json } from 'stream/consumers';
 
 export const users = pgTable("users", {
     id: serial("id").primaryKey(),
@@ -71,3 +74,19 @@ export const issuerdb = pgTable("issuerdb", {
     lasttransid: integer("lasttransid").notNull().default(0),
 });
 export type IssuerSelect = typeof issuerdb.$inferSelect;
+
+export const qrcodedb = pgTable("qrcodedb", {
+    id: serial("id").primaryKey(),
+    hashid: text("hashid").notNull().default("not hashed"),
+    jsondata: text("jsondata").notNull().default("{}"),
+    userid: text("userid").notNull(),
+    points: integer("points").notNull().default(0),
+    reference: text("reference").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: false }).notNull().defaultNow(),
+    expirydate: timestamp("expirydate", { withTimezone: true }).notNull().defaultNow(),
+    status: text("status").notNull().default("active"),
+    redeemCnt: integer("redeemcnt").notNull().default(0),
+    redeemtype: text("redeemtype").notNull().default("once"),
+});
+export type QrcodeSelect = typeof qrcodedb.$inferSelect;

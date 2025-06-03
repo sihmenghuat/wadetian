@@ -12,12 +12,15 @@ export default function QrCodeForm() {
   const [points, setPoints] = useState("");
   const [payType, setPayType] = useState("");
   const [qrValue, setQrValue] = useState("");
+  const [reference, setRefence] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // You can format the QR value as needed (JSON, URL, etc.)
-    const value = JSON.stringify({ uid, points, payType });
+    const value = JSON.stringify({ uid, points, payType, reference });
     setQrValue(value);
+    // Redirect to /qrcodeGen with form data as query params
+    const params = new URLSearchParams({ uid, points, payType, reference }).toString();
+    window.location.href = `/qrcodeGen?${params}`;
   };
 
   return (
@@ -50,6 +53,15 @@ export default function QrCodeForm() {
           <option value="Pay">Pay</option>
           <option value="Collect">Collect</option>
         </select>
+        <input
+          className="border p-2 rounded"
+          type="text"
+          placeholder="Reference"
+          value={reference}
+          onChange={e => setRefence(e.target.value)}
+          required
+          pattern="^[a-zA-Z0-9-_ ]*$"
+        />
         <button className="bg-blue-600 text-white p-2 rounded" type="submit">Generate</button>
       </form>
       {qrValue && (
@@ -62,3 +74,4 @@ export default function QrCodeForm() {
     </div>
   );
 }
+// This component generates a QR code based on user input and displays it.
