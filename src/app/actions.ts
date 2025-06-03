@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { users, sessiondb, transdb, issuerdb } from "@/db/schema";
+import { users, sessiondb, transdb, issuerdb, qrcodedb } from "@/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -42,6 +42,18 @@ export async function removeUser(id: number) {
     await db.delete(users).where(eq(users.id, id));
     revalidatePath("/responses");
     console.log("User deleted");
+  } catch (err) {
+    if (err instanceof postgres.PostgresError) {
+      console.log(err.message);
+    }
+  }
+}
+
+export async function removeQrcode(id: number) {
+  try {
+    await db.delete(qrcodedb).where(eq(qrcodedb.id, id));
+    revalidatePath("/qrcodelist");
+    console.log("QR code deleted");
   } catch (err) {
     if (err instanceof postgres.PostgresError) {
       console.log(err.message);
@@ -150,19 +162,17 @@ export async function qrcodePay(formData: FormData)  {
 export async function qrcodeGen(formData: FormData)  {
   try {
     await db.transaction(async (tx) => {
-      await tx.insert(transdb).values({
+      await tx.insert(qrcodedb).values({
         userid: formData.get("userid") as string,
-        fromid: formData.get("fromid") as string,
-        issuerid: formData.get("issuerid") as string,
-        transdesc: formData.get("userid") as string,
-        transamount: Number(formData.get("balance")),
-      });
-      await tx.insert(issuerdb).values({
-        userid: formData.get("userid") as string,
-        issuerid: formData.get("issuerid") as string,
-        balance: Number(formData.get("balance")),
-        lasttransdate: new Date(),
-        lasttransid: 0, // Assuming this is a placeholder, adjust as needed
+        points: Number(formData.get("points")),
+        reference: formData.get("reference") as string,
+        paytype: formData.get("payType") as string,
+        jsondata: JSON.stringify({
+          uid: formData.get("userid"),
+          points: formData.get("points"),
+          payType: formData.get("payType"),
+          reference: formData.get("reference"),
+        }),
       });
     });
   } catch (err) {
@@ -171,6 +181,6 @@ export async function qrcodeGen(formData: FormData)  {
       console.error(err.message);
     }
   }
-  redirect("/responses");
+  redirect("/qrcodelist");
   // Ensure the function returns void
 }

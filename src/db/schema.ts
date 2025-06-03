@@ -82,6 +82,7 @@ export const qrcodedb = pgTable("qrcodedb", {
     userid: text("userid").notNull(),
     points: integer("points").notNull().default(0),
     reference: text("reference").notNull(),
+    paytype: text("paytype").notNull().default(""),
     createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: false }).notNull().defaultNow(),
     expirydate: timestamp("expirydate", { withTimezone: true }).notNull().defaultNow(),
