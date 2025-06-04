@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { decrypt } from "@/app/lib/session";
 import { permanentRedirect } from "next/navigation";
 import QrCodeCollect from "@/app/components/qrcode-collect";
-import { qrcodeCollect } from "../actions";
 
 export default async function QRcodePayPage() {
   const cookie = (await cookies()).get("session")?.value;
@@ -21,14 +20,6 @@ console.log("Session:", session);
       <main>
       <div className="flex flex-col justify-center items-center border-2 gap-5 rounded-md p-6">
       <QrCodeCollect userid={userid} />
-      <form className="flex items-center flex-col gap-3" action={qrcodeCollect}>
-      <button
-        type="submit"
-        className="text-lg w-full bg-blue-800 text-white rounded-md p-2.5 focus:ring-2 focus:ring-blue-300 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:ring-gray-300 focus:outline-none"
-      >
-        Submit
-      </button>
-    </form>
     </div>
         <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
           <a

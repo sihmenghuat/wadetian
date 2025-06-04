@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Html5Qrcode } from "html5-qrcode";
 
+
 export default function QrCodeCollect({ userid }: { userid: string }) {
   const [qrData, setQrData] = useState("");
   const [scanError, setScanError] = useState("");
@@ -74,6 +75,25 @@ export default function QrCodeCollect({ userid }: { userid: string }) {
                 return (
                   <div className="p-2 bg-gray-100 rounded text-sm w-full break-words mb-2">
                     <strong>QR Data:</strong> {qrData}
+                  </div>
+                );
+              }
+              if (parsed.payType !== "Collect") {
+                return (
+                  <div className="p-2 bg-red-100 rounded text-sm w-full break-words mb-2 flex flex-col items-center">
+                    <div className="text-red-600 font-semibold mb-2">Error: payType is not &#39;Collect&#39;.</div>
+                    <button
+                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                      onClick={() => {
+                        setQrData("");
+                        setScanError("");
+                        if (typeof window !== "undefined") {
+                          window.location.reload();
+                        }
+                      }}
+                    >
+                      Ok
+                    </button>
                   </div>
                 );
               }

@@ -137,26 +137,48 @@ export async function qrcodeCollect(formData: FormData)  {
         userid: formData.get("userid") as string,
         xid: formData.get("mercid") as string,
         transdesc: formData.get("reference") as string,
-        transamt: Number(formData.get("points"))*-1,
+        transamt: Number(formData.get("points")),
       });
       await tx.insert(transdb).values({
         userid: formData.get("mercid") as string,
         xid: formData.get("userid") as string,
         transdesc: formData.get("reference") as string,
-        transamt: Number(formData.get("points")),
+        transamt: Number(formData.get("points"))*-1,
       });
-      await tx.insert(balancedb).values({
-        userid: formData.get("userid") as string,
-        issuerid: formData.get("mercid") as string,
-        balance: Number(formData.get("balance"))*-1,
-        lasttransdate: new Date(),
-      });
-      await tx.insert(balancedb).values({
-        userid: formData.get("mercid") as string,
-        issuerid: formData.get("mercid") as string,
-        balance: Number(formData.get("balance")),
-        lasttransdate: new Date(),
-      });
+      const result = await tx
+      .update(balancedb)
+      .set ({
+        balance: sql`${balancedb.balance} + Number(formData.get("points"))`,
+        lasttransdate: new Date()})
+        .where(and(
+          eq(balancedb.userid, formData.get("userid") as string),
+          eq(balancedb.issuerid, formData.get("mercid") as string)
+         ));
+      if (result.length === 0) {
+        await tx.insert(balancedb).values({
+          userid: formData.get("userid") as string,
+          issuerid: formData.get("mercid") as string,
+          balance: Number(formData.get("points")),
+          lasttransdate: new Date(),
+        });
+      }
+      const result1 = await tx
+      .update(balancedb)
+      .set ({
+        balance: sql`${balancedb.balance} - Number(formData.get("points"))`,
+        lasttransdate: new Date()})
+        .where(and(
+          eq(balancedb.userid, formData.get("mercid") as string),
+          eq(balancedb.issuerid, formData.get("mercid") as string)
+         ));
+      if (result1.length === 0) {
+        await tx.insert(balancedb).values({
+          userid: formData.get("mercid") as string,
+          issuerid: formData.get("mercid") as string,
+          balance: Number(formData.get("points"))*-1,
+          lasttransdate: new Date(),
+        });
+      }
     });
   } catch (err) {
     if (err instanceof postgres.PostgresError) {
