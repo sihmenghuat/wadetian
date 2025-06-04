@@ -63,12 +63,17 @@ export const transdb = pgTable("transdb", {
     transamt: integer("transamt").notNull().default(0),
 });
 
-export const balancedb = pgTable("balancedb", {
+export const balancedb = pgTable("balancedb",
+  {
     userid: text("userid").notNull(),
     issuerid: text("issuerid").notNull(),
     balance: integer("balance").notNull().default(0),
     lasttransdate: timestamp("lasttransdate", { withTimezone: true }).notNull().defaultNow(),
-});
+  },
+  (table) => ({
+    primaryKey: [table.userid, table.issuerid],
+  })
+);
 export type IssuerSelect = typeof balancedb.$inferSelect;
 
 export const qrcodedb = pgTable("qrcodedb", {

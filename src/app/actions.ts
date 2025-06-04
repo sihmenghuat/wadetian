@@ -131,6 +131,7 @@ export async function getResponses(userid: string) {
 }
 
 export async function qrcodeCollect(formData: FormData)  {
+  console.log("Collect from merc:", formData.get("userid"),formData.get("mercid"),formData.get("points"));
   try {
     await db.transaction(async (tx) => {
       await tx.insert(transdb).values({
@@ -148,13 +149,14 @@ export async function qrcodeCollect(formData: FormData)  {
       const result = await tx
       .update(balancedb)
       .set ({
-        balance: sql`${balancedb.balance} + Number(formData.get("points"))`,
+        balance: sql`${balancedb.balance} + ${Number(formData.get("points"))}`,
         lasttransdate: new Date()})
         .where(and(
           eq(balancedb.userid, formData.get("userid") as string),
           eq(balancedb.issuerid, formData.get("mercid") as string)
          ));
-      if (result.length === 0) {
+         console.log("Result:", result, result.count);
+      if (result.count === 0) {
         await tx.insert(balancedb).values({
           userid: formData.get("userid") as string,
           issuerid: formData.get("mercid") as string,
@@ -165,13 +167,13 @@ export async function qrcodeCollect(formData: FormData)  {
       const result1 = await tx
       .update(balancedb)
       .set ({
-        balance: sql`${balancedb.balance} - Number(formData.get("points"))`,
+        balance: sql`${balancedb.balance} - ${Number(formData.get("points"))}`,
         lasttransdate: new Date()})
         .where(and(
           eq(balancedb.userid, formData.get("mercid") as string),
           eq(balancedb.issuerid, formData.get("mercid") as string)
          ));
-      if (result1.length === 0) {
+      if (result1.count === 0) {
         await tx.insert(balancedb).values({
           userid: formData.get("mercid") as string,
           issuerid: formData.get("mercid") as string,
@@ -183,7 +185,7 @@ export async function qrcodeCollect(formData: FormData)  {
   } catch (err) {
     if (err instanceof postgres.PostgresError) {
       // Optionally handle error UI here
-      console.error(err.message);
+      console.error("qrcodeCollect:",err.message);
     }
   }
   redirect("/responses");

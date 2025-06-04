@@ -60,10 +60,12 @@ export default function QrCodeCollect({ userid }: { userid: string }) {
           {/* QR Code Reader Section */}
           <div className="my-4 w-full flex flex-col items-center">
             <h2 className="text-lg font-semibold mb-2">Scan a QR Code</h2>
-            <div
-              id={qrRegionId}
-              className="w-64 h-48 mb-2 bg-gray-200 rounded"
-            />
+            {!qrData && (
+              <div
+                id={qrRegionId}
+                className="w-64 h-48 mb-2 bg-gray-200 rounded"
+              />
+            )}
             {qrData && (() => {
               let parsed = null;
               try {
@@ -107,8 +109,8 @@ export default function QrCodeCollect({ userid }: { userid: string }) {
                     Object.entries(merged).forEach(([key, value]) => {
                       fd.append(key, value as string);
                     });
-                    const { qrcodePay } = await import("../actions");
-                    await qrcodePay(fd);
+                    const { qrcodeCollect } = await import("../actions");
+                    await qrcodeCollect(fd);
                   }}
                 >
                   {Object.entries(parsed).map(([key, value]) => (
