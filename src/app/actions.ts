@@ -1,14 +1,13 @@
 "use server";
 
 import { db } from "@/db";
-import { users, sessiondb, transdb, issuerdb, qrcodedb } from "@/db/schema";
+import { users, sessiondb, transdb, balancedb, qrcodedb } from "@/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { permanentRedirect } from "next/navigation";
 import postgres from "postgres";
 import { createSession, deleteSession } from "@/app/lib/session";
-import { PgInteger } from "drizzle-orm/pg-core";
 
 export async function contactUsAction(formData: FormData)  {
   try {
@@ -131,22 +130,71 @@ export async function getResponses(userid: string) {
   return await db.select().from(users).where(eq(users.userid, userid));
 }
 
+export async function qrcodeCollect(formData: FormData)  {
+  try {
+    await db.transaction(async (tx) => {
+      await tx.insert(transdb).values({
+        userid: formData.get("userid") as string,
+        xid: formData.get("mercid") as string,
+        transdesc: formData.get("reference") as string,
+        transamt: Number(formData.get("points"))*-1,
+      });
+      await tx.insert(transdb).values({
+        userid: formData.get("mercid") as string,
+        xid: formData.get("userid") as string,
+        transdesc: formData.get("reference") as string,
+        transamt: Number(formData.get("points")),
+      });
+      await tx.insert(balancedb).values({
+        userid: formData.get("userid") as string,
+        issuerid: formData.get("mercid") as string,
+        balance: Number(formData.get("balance"))*-1,
+        lasttransdate: new Date(),
+      });
+      await tx.insert(balancedb).values({
+        userid: formData.get("mercid") as string,
+        issuerid: formData.get("mercid") as string,
+        balance: Number(formData.get("balance")),
+        lasttransdate: new Date(),
+      });
+    });
+  } catch (err) {
+    if (err instanceof postgres.PostgresError) {
+      // Optionally handle error UI here
+      console.error(err.message);
+    }
+  }
+  redirect("/responses");
+  // Ensure the function returns void
+}
+
+
 export async function qrcodePay(formData: FormData)  {
   try {
     await db.transaction(async (tx) => {
       await tx.insert(transdb).values({
         userid: formData.get("userid") as string,
-        fromid: formData.get("fromid") as string,
-        issuerid: formData.get("issuerid") as string,
-        transdesc: formData.get("userid") as string,
-        transamount: Number(formData.get("balance")),
+        xid: formData.get("mercid") as string,
+        transdesc: formData.get("reference") as string,
+        transamt: Number(formData.get("points"))*-1,
       });
-      await tx.insert(issuerdb).values({
+      await tx.insert(transdb).values({
+        userid: formData.get("mercid") as string,
+        xid: formData.get("userid") as string,
+        transdesc: formData.get("reference") as string,
+        transamt: Number(formData.get("points")),
+      });
+      await tx.insert(balancedb).values({
         userid: formData.get("userid") as string,
-        issuerid: formData.get("issuerid") as string,
+        issuerid: formData.get("mercid") as string,
+        balance: Number(formData.get("balance"))*-1,
+        lasttransdate: new Date(),
+      });
+      await tx.insert(balancedb).values({
+        userid: formData.get("mercid") as string,
+        issuerid: formData.get("mercid") as string,
         balance: Number(formData.get("balance")),
         lasttransdate: new Date(),
-        lasttransid: 0, // Assuming this is a placeholder, adjust as needed
       });
     });
   } catch (err) {
@@ -163,12 +211,13 @@ export async function qrcodeGen(formData: FormData)  {
   try {
     await db.transaction(async (tx) => {
       await tx.insert(qrcodedb).values({
-        userid: formData.get("userid") as string,
+        userid: formData.get("mercid") as string,
+        hashid: formData.get("qrhash") as string,
         points: Number(formData.get("points")),
         reference: formData.get("reference") as string,
         paytype: formData.get("payType") as string,
         jsondata: JSON.stringify({
-          uid: formData.get("userid"),
+          mercid: formData.get("mercid"),
           points: formData.get("points"),
           payType: formData.get("payType"),
           reference: formData.get("reference"),

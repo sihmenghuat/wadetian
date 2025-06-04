@@ -1,8 +1,6 @@
 // db/schema.ts
-import { create } from 'domain';
+
 import { pgTable, text, integer, doublePrecision, timestamp, serial } from 'drizzle-orm/pg-core';
-import { getHash } from 'next/dist/server/image-optimizer';
-import { json } from 'stream/consumers';
 
 export const users = pgTable("users", {
     id: serial("id").primaryKey(),
@@ -12,6 +10,7 @@ export const users = pgTable("users", {
     email: text("email"),
     hobby: text("hobby"),
     points: integer("points"),
+    usertype: text("usertype").notNull().default("user"),
     createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: false }).notNull().defaultNow(),
 });
@@ -58,22 +57,19 @@ export const sessiondb = pgTable("sessiondb", {
 export const transdb = pgTable("transdb", {
     id: serial("id").primaryKey(),
     userid: text("userid").notNull(),
-    fromid: text("userid").notNull(),
-    issuerid: text("userid").notNull(),
-    transdesc: text("status").notNull(),
-    balance: integer("balance").notNull().default(0),
+    xid: text("xid").notNull(),
+    transdesc: text("reference").notNull(),
     transdate: timestamp("transdate", { withTimezone: true }).notNull().defaultNow(),
-    transamount: integer("transamount").notNull().default(0),
+    transamt: integer("transamt").notNull().default(0),
 });
 
-export const issuerdb = pgTable("issuerdb", {
+export const balancedb = pgTable("balancedb", {
     userid: text("userid").notNull(),
-    issuerid: text("userid").notNull(),
+    issuerid: text("issuerid").notNull(),
     balance: integer("balance").notNull().default(0),
     lasttransdate: timestamp("lasttransdate", { withTimezone: true }).notNull().defaultNow(),
-    lasttransid: integer("lasttransid").notNull().default(0),
 });
-export type IssuerSelect = typeof issuerdb.$inferSelect;
+export type IssuerSelect = typeof balancedb.$inferSelect;
 
 export const qrcodedb = pgTable("qrcodedb", {
     id: serial("id").primaryKey(),

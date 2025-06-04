@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
 import { useParams } from "next/navigation";
 
 export default function QrCodeForm() {
@@ -11,13 +10,11 @@ export default function QrCodeForm() {
 
   const [points, setPoints] = useState("");
   const [payType, setPayType] = useState("");
-  const [qrValue, setQrValue] = useState("");
   const [reference, setRefence] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const value = JSON.stringify({ uid, points, payType, reference });
-    setQrValue(value);
+
     // Redirect to /qrcodeGen with form data as query params
     const params = new URLSearchParams({ uid, points, payType, reference }).toString();
     window.location.href = `/qrcodeGen?${params}`;
@@ -64,14 +61,13 @@ export default function QrCodeForm() {
         />
         <button className="bg-blue-600 text-white p-2 rounded" type="submit">Generate</button>
       </form>
-      {qrValue && (
-        <div className="mt-8 flex flex-col items-center">
-          <QRCodeSVG value={qrValue} size={200} />
-          <p className="mt-2 text-sm text-gray-600 break-all">{qrValue}</p>
-        </div>
-      )
-      }
     </div>
   );
 }
 // This component generates a QR code based on user input and displays it.
+//      {qrValue && (
+//      <div className="mt-8 flex flex-col items-center">
+//       <QRCodeSVG value={qrValue} size={200} />
+//       <p className="mt-2 text-sm text-gray-600 break-all">{qrValue}</p>
+//      </div>
+//      )}
