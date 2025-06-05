@@ -1,9 +1,19 @@
+"use client"
+
 import { contactUsAction } from "../actions";
+import { useActionState } from "react";
+
 // This component is used to create a new account by collecting user information through a form.
 export function ContactForm() {
+  const [state, formAction] = useActionState(contactUsAction, { error: "" });
   return (
-    <form className="flex items-center flex-col gap-3" action={contactUsAction}>
+    <form className="flex items-center flex-col gap-3" action={formAction}>
       <h2 className="text-2xl font-semibold">Create New Account</h2>
+      {state.error && (
+        <div className="w-full text-red-600 bg-red-50 border border-red-200 rounded p-2 text-center mb-2">
+          {state.error}
+        </div>
+      )}
       <input
         type="number"
         placeholder="ID / Phone Number" required  min={1000000} max={999999999999}

@@ -9,8 +9,13 @@ import { permanentRedirect } from "next/navigation";
 import postgres from "postgres";
 import { createSession, deleteSession } from "@/app/lib/session";
 
-export async function contactUsAction(formData: FormData)  {
+export async function contactUsAction(prevState: { error: string }, formData: FormData)  {
   try {
+    // Check if user already exists
+    const existing = await db.select().from(users).where(eq(users.userid, formData.get("userid") as string));
+    if (existing.length > 0) {
+      return { error: "User ID already exists" };
+    }
     await db.transaction(async (tx) => {
       await tx.insert(users).values({
         userid: formData.get("userid") as string,
@@ -28,12 +33,12 @@ export async function contactUsAction(formData: FormData)  {
     });
   } catch (err) {
     if (err instanceof postgres.PostgresError) {
-      // Optionally handle error UI here
-      console.error(err.message);
+      return { error: err.message };
     }
+    return { error: "Unknown error occurred" };
   }
+  // On success, redirect
   redirect("/responses");
-  // Ensure the function returns void
 }
 
 export async function removeUser(id: number) {

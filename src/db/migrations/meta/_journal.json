@@ -15,6 +15,13 @@
       "when": 1745992617373,
       "tag": "0001_sharp_spencer_smythe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749052479098,
+      "tag": "0002_sleepy_mach_iv",
+      "breakpoints": true
     }
   ]
 }

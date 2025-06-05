@@ -12,6 +12,7 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "BBit": "file:",
     "drizzle-orm": "^0.43.1",
     "html5-qrcode": "^2.3.8",
     "jose": "^6.0.11",

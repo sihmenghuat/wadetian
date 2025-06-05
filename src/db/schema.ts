@@ -1,6 +1,6 @@
 // db/schema.ts
 
-import { pgTable, text, integer, doublePrecision, timestamp, serial } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, doublePrecision, timestamp, serial, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const users = pgTable("users", {
     id: serial("id").primaryKey(),
@@ -13,7 +13,11 @@ export const users = pgTable("users", {
     usertype: text("usertype").notNull().default("user"),
     createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: false }).notNull().defaultNow(),
-});
+},
+(table) => ({
+    users_userid_unique: uniqueIndex("users_userid_unique").on(table.userid),
+})
+);
 export type UserSelect = typeof users.$inferSelect;
 
 export const menuItems = pgTable('menu_items', {
