@@ -56,7 +56,7 @@ export default function QrCodeCollect({ userid }: { userid: string }) {
     <div>
       <main>
         <div className="flex flex-col items-center justify-center border-2 gap-5 rounded-md p-6">
-          <h1 className="text-2xl font-bold mb-4">Scan QR Code to Pay</h1>
+          <h1 className="text-2xl font-bold mb-4">Scan QR Code to Collect</h1>
           {/* QR Code Reader Section */}
           <div className="my-4 w-full flex flex-col items-center">
             <h2 className="text-lg font-semibold mb-2">Scan a QR Code</h2>

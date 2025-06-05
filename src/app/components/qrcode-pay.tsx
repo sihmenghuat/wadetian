@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import type { Html5Qrcode } from "html5-qrcode";
+import { qrcodePay } from "../actions";
 
 export default function QrCodePay({ userid }: { userid: string }) {
   const [qrData, setQrData] = useState("");
@@ -59,10 +60,12 @@ export default function QrCodePay({ userid }: { userid: string }) {
           {/* QR Code Reader Section */}
           <div className="my-4 w-full flex flex-col items-center">
             <h2 className="text-lg font-semibold mb-2">Scan a QR Code</h2>
-            <div
-              id={qrRegionId}
-              className="w-64 h-48 mb-2 bg-gray-200 rounded"
-            />
+            {!qrData && (
+              <div
+                id={qrRegionId}
+                className="w-64 h-48 mb-2 bg-gray-200 rounded"
+              />
+            )}
             {qrData && (() => {
               let parsed = null;
               try {
@@ -77,42 +80,27 @@ export default function QrCodePay({ userid }: { userid: string }) {
                   </div>
                 );
               }
+              if (parsed.payType !== "Pay") {
+                return (
+                  <div className="p-2 bg-red-100 rounded text-sm w-full break-words mb-2 flex flex-col items-center">
+                    <div className="text-red-600 font-semibold mb-2">Error: payType is not &#39;Pay&#39;.</div>
+                    <button
+                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                      onClick={() => {
+                        setQrData("");
+                        setScanError("");
+                        if (typeof window !== "undefined") {
+                          window.location.reload();
+                        }
+                      }}
+                    >
+                      Ok
+                    </button>
+                  </div>
+                );
+              }              
               return (
-                <form
-                  className="w-full flex flex-col items-center gap-2 mb-2"
-                  action={async () => {
-                    // Merge scanned QR data and userid, then call qrcodePay server action
-                    const merged = { ...parsed, userid };
-                    const fd = new FormData();
-                    Object.entries(merged).forEach(([key, value]) => {
-                      fd.append(key, value as string);
-                    });
-                    const { qrcodePay } = await import("../actions");
-                    await qrcodePay(fd);
-                  }}
-                >
-                  {Object.entries(parsed).map(([key, value]) => (
-                    <div key={key} className="w-full flex flex-row items-center">
-                      <label className="w-32 font-semibold text-right mr-2">{key}:</label>
-                      <input
-                        className="flex-1 p-1 rounded border bg-gray-50"
-                        name={key}
-                        value={value as string}
-                        readOnly
-                        aria-label={key}
-                        title={key}
-                        placeholder={key}
-                      />
-                    </div>
-                  ))}
-                  <input type="hidden" name="userid" value={userid} />
-                  <button
-                    type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition mt-2"
-                  >
-                    Submit
-                  </button>
-                </form>
+                <PayFormWithError parsed={parsed} userid={userid} />
               );
             })()}
             {scanError && (
@@ -123,4 +111,69 @@ export default function QrCodePay({ userid }: { userid: string }) {
     </main>
     </div>
 );
+}
+
+function PayFormWithError({ parsed, userid }: { parsed: Record<string, string>; userid: string }) {
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  return (
+    <form
+      className="w-full flex flex-col items-center gap-2 mb-2"
+      action={async () => {
+        setError(null);
+        startTransition(async () => {
+          const merged = { ...parsed, userid };
+          const fd = new FormData();
+          Object.entries(merged).forEach(([key, value]) => {
+            fd.append(key, value as string);
+          });
+          const result = await qrcodePay(fd);
+          if (result && result.error) {
+            setError(result.error);
+          }
+        });
+      }}
+    >
+      {Object.entries(parsed).map(([key, value]) => (
+        <div key={key} className="w-full flex flex-row items-center">
+          <label className="w-32 font-semibold text-right mr-2">{key}:</label>
+          <input
+            className="flex-1 p-1 rounded border bg-gray-50"
+            name={key}
+            value={value as string}
+            readOnly
+            aria-label={key}
+            title={key}
+            placeholder={key}
+          />
+        </div>
+      ))}
+      <input type="hidden" name="userid" value={userid} />
+      {!error && (
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition mt-2"
+        disabled={isPending}
+      >
+        {isPending ? "Processing..." : "Submit"}
+      </button>
+      )}
+      {error && (
+      <button
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        onClick={() => {
+          if (typeof window !== "undefined") {
+            window.location.reload();
+          }
+        }}
+      >
+        Ok
+      </button>
+      )}
+      {error && (
+        <div className="text-red-600 font-semibold mt-2">{error}</div>
+      )}
+    </form>
+  );
 }

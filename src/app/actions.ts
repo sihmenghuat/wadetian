@@ -201,6 +201,18 @@ export async function qrcodeCollect(formData: FormData)  {
 export async function qrcodePay(formData: FormData)  {
   try {
     await db.transaction(async (tx) => {
+      // Get the sum of balance for the user from balancedb
+      const [{ sum }] = await tx
+        .select({ sum: sql`COALESCE(SUM(${balancedb.balance}),0)` })
+        .from(balancedb)
+        .where(
+          eq(balancedb.userid, formData.get("userid") as string)
+        );
+      const sumNum = typeof sum === "bigint" ? Number(sum) : Number(sum ?? 0);
+      const points = Number(formData.get("points"));
+      if (sumNum < points) {
+        throw new Error(`Points Not Enough - Balance= ${sumNum}`);
+      }
       await tx.insert(transdb).values({
         userid: formData.get("userid") as string,
         xid: formData.get("mercid") as string,
@@ -227,11 +239,18 @@ export async function qrcodePay(formData: FormData)  {
       });
     });
   } catch (err) {
+    if (err instanceof Error) {
+      // Show error message for insufficient points
+      return { error: err.message };
+    }
     if (err instanceof postgres.PostgresError) {
       // Optionally handle error UI here
       console.error(err.message);
     }
+    // Prevent redirect if error
+    return { error: "Unknown error occurred" };
   }
+  // Only redirect if no error
   redirect("/responses");
   // Ensure the function returns void
 }
