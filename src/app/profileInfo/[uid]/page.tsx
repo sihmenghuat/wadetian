@@ -23,7 +23,7 @@ console.log("Session:", session);
     <div>
       <main>
     <div className="flex flex-col justify-center items-center border-2 gap-5 rounded-md p-6">
-      <h2 className="text-2xl font-bold text-center">Profile Information</h2>
+      <h2 className="text-2xl font-bold text-center">User Profile Information</h2>
       {resps.length > 0 ? (
         <ul className="space-y-4">
           {resps.map(resp => (

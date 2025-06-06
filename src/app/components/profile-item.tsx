@@ -10,12 +10,9 @@ export function ProfileItem({ user }: UserItemProps) {
     <li className="bg-gray-50 border border-gray-300 rounded relative">
       <div className="p-4">
         <p className="font-semibold mb-1">User ID: {user.userid}</p>
-        <p className="text-gray-600 text-sm mb-2">PIN: {user.pin}</p>
         <p className="text-gray-600 text-sm mb-2">Contact No.:{user.contactno}</p>
         <p className="text-gray-600 text-sm mb-2">Email: {user.email}</p>
         <p className="text-gray-600">Hobby: {user.hobby}</p>
-        <p></p>
-        <p className="font-semibold mb-1">Points: {user.points}</p>
       </div>
     </li>
   );
