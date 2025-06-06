@@ -213,6 +213,75 @@ export async function qrcodePay(formData: FormData)  {
       if (sumNum < points) {
         throw new Error(`Points Not Enough - Balance= ${sumNum}`);
       }
+      // Fetch all balances for the user, ordered by lasttransdate DESC
+      const balances = await tx
+        .select()
+        .from(balancedb)
+        .where(eq(balancedb.userid, formData.get("userid") as string))
+        .orderBy(sql`${balancedb.lasttransdate} DESC`);
+      let remainingPoints = points;
+      for (const bal of balances) {
+        if (remainingPoints <= 0) break;
+        const balValue = Number(bal.balance);
+        if (balValue <= 0) continue;
+        if (balValue <= remainingPoints) {
+          // Set this balance to zero, reduce remainingPoints
+          await tx.update(balancedb)
+            .set({ balance: 0, lasttransdate: new Date() })
+            .where(
+              and(
+                eq(balancedb.userid, bal.userid),
+                eq(balancedb.issuerid, bal.issuerid),
+              )
+            );
+            const result = await tx
+            .update(balancedb)
+            .set ({
+              balance: sql`${balancedb.balance} + ${balValue}`,
+              lasttransdate: new Date()})
+              .where(and(
+                eq(balancedb.userid, formData.get("mercid") as string),
+                eq(balancedb.issuerid, bal.issuerid as string)
+              ));
+              if (result.count === 0) {
+                await tx.insert(balancedb).values({
+                  userid: formData.get("mercid") as string,
+                  issuerid: bal.issuerid as string,
+                  balance: balValue,
+                  lasttransdate: new Date(),
+                });
+              }
+          remainingPoints -= balValue;
+        } else {
+          // Reduce this balance by remainingPoints
+          await tx.update(balancedb)
+            .set({ balance: balValue - remainingPoints, lasttransdate: new Date() })
+            .where(
+              and(
+                eq(balancedb.userid, bal.userid),
+                eq(balancedb.issuerid, bal.issuerid),
+              )
+            );
+            const result1 = await tx
+            .update(balancedb)
+            .set ({
+              balance: sql`${balancedb.balance} + ${remainingPoints}`,
+              lasttransdate: new Date()})
+              .where(and(
+                eq(balancedb.userid, formData.get("mercid") as string),
+                eq(balancedb.issuerid, bal.issuerid as string)
+              ));
+              if (result1.count === 0) {
+                await tx.insert(balancedb).values({
+                  userid: formData.get("mercid") as string,
+                  issuerid: bal.issuerid as string,
+                  balance: remainingPoints,
+                  lasttransdate: new Date(),
+                });
+              }
+          remainingPoints = 0;
+        }
+      }
       await tx.insert(transdb).values({
         userid: formData.get("userid") as string,
         xid: formData.get("mercid") as string,
@@ -224,18 +293,6 @@ export async function qrcodePay(formData: FormData)  {
         xid: formData.get("userid") as string,
         transdesc: formData.get("reference") as string,
         transamt: Number(formData.get("points")),
-      });
-      await tx.insert(balancedb).values({
-        userid: formData.get("userid") as string,
-        issuerid: formData.get("mercid") as string,
-        balance: Number(formData.get("balance"))*-1,
-        lasttransdate: new Date(),
-      });
-      await tx.insert(balancedb).values({
-        userid: formData.get("mercid") as string,
-        issuerid: formData.get("mercid") as string,
-        balance: Number(formData.get("balance")),
-        lasttransdate: new Date(),
       });
     });
   } catch (err) {

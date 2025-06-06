@@ -47,8 +47,8 @@ export default function QrCodeForm() {
           title="Pay Type"
         >
           <option value="" disabled>Select Transaction Type</option>
-          <option value="Pay">Pay</option>
-          <option value="Collect">Collect</option>
+          <option value="Pay">To Receive Points</option>
+          <option value="Collect">To Give Out Points</option>
         </select>
         <input
           className="border p-2 rounded"
