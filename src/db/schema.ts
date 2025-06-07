@@ -5,7 +5,7 @@ import { pgTable, text, integer, doublePrecision, timestamp, serial, uniqueIndex
 export const users = pgTable("users", {
     id: serial("id").primaryKey(),
     userid: text("userid").notNull(),
-    pin: integer("pin").notNull(),
+    pin: text("pin").notNull(),
     contactno: text("contactno"),
     email: text("email"),
     hobby: text("hobby"),

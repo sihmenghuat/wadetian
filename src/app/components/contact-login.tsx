@@ -10,9 +10,13 @@ export function LoginForm() {
     <form className="flex items-center flex-col gap-3" action={loginAction}>
       <h2 className="text-2xl font-semibold">Login Page</h2>
       <input
-        type="number"
-        placeholder="ID / Phone Number" required min={1000000} maxLength={999999999999}
+        type="text"
+        placeholder="ID / Phone Number - 7 to 12 Digits"
+        required
         name="userid"
+        minLength={7}
+        maxLength={12}
+        pattern="\d{7,12}"
         className="p-2.5 text-lg w-full rounded-md focus:ring-2 focus:ring-blue-300 bg-gray-50 border border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 focus:outline-none"
       />
       <div className="w-full relative">
@@ -22,6 +26,8 @@ export function LoginForm() {
           name="pin"
           value={pin}
           onChange={e => setPin(e.target.value)}
+          maxLength={4}
+          pattern="\d{4}"
           className="p-2.5 text-lg w-full rounded-md focus:ring-2 focus:ring-blue-300 bg-gray-50 border border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 focus:outline-none pr-16"
         />
         <button

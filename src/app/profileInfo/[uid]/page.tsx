@@ -2,12 +2,12 @@ import { getResponses } from "@/app/actions";
 import { LogoutForm } from "@/app/components/contact-logout";
 import { ProfileItem } from "../../components/profile-item";
 import Image from "next/image";
-import Link from "next/link";
 import { cookies } from "next/headers";
 import { decrypt } from "@/app/lib/session";
 import { permanentRedirect } from "next/navigation";
+import TransactionTableClient from "@/app/components/transaction-table-client";
 
-export default async function ProfileItemPage() {
+export default async function ProfileItemPage({ searchParams }: { searchParams?: { page?: string } }) {
   const cookie = (await cookies()).get("session")?.value;
   const session = await decrypt(cookie);
 console.log("Session:", session);
@@ -18,6 +18,8 @@ console.log("Session:", session);
   const userid = session.userId.toString();
   const resps = userid ? await getResponses(userid) : [];
   console.log("User ID:", userid);
+  const page = Number(searchParams?.page) || 1;
+  const pageSize = 10;
 
   return (
     <div>
@@ -33,13 +35,11 @@ console.log("Session:", session);
       ) : (
         <p className="text-center text-gray-500 py-4">Profile Not found.</p>
       )}
+      {/* Transaction Table Client Component */}
+      <div className="w-full my-4">
+        <TransactionTableClient userid={userid} initialPage={page} pageSize={pageSize} />
+      </div>
       <LogoutForm userid={userid} />
-      <Link
-        className="text-center underline font-semibold text-lg"
-        href="/profileEdit"
-      >
-        Edit Profile
-      </Link>
     </div>
     </main>
     <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
@@ -88,6 +88,21 @@ console.log("Session:", session);
           />
           Generate QR Codes →
         </a>
+                <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href={`/profileEdit`}
+//          target="_blank"
+//          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/qrcode.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          Edit Profile       
+          </a>
       </footer>
     </div>   
   );

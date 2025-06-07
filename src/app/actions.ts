@@ -19,7 +19,7 @@ export async function contactUsAction(prevState: { error: string }, formData: Fo
     await db.transaction(async (tx) => {
       await tx.insert(users).values({
         userid: formData.get("userid") as string,
-        pin: Number(formData.get("pin")) as number,
+        pin: formData.get("pin")as string,
         contactno: formData.get("userid") as string,
         email: formData.get("email") as string,
         hobby: formData.get("hobby") as string,
@@ -38,7 +38,34 @@ export async function contactUsAction(prevState: { error: string }, formData: Fo
     return { error: "Unknown error occurred" };
   }
   // On success, redirect
-  redirect("/responses");
+  redirect("/profileInfo/" + formData.get("userid"));
+}
+
+export async function contactEditAction(prevState: { error: string }, formData: FormData)  {
+  try {
+    // Check if user not exists
+    const existing = await db.select().from(users).where(eq(users.userid, formData.get("userid") as string));
+    if (existing.length === 0) {
+      return { error: "User ID not exists" };
+    }
+    await db.transaction(async (tx) => {
+      await tx.update(users)
+          .set({
+            pin: formData.get("pin") as string,
+            contactno: formData.get("contact") as string,
+            email: formData.get("email") as string,
+            hobby: formData.get("hobby") as string,
+          })
+          .where(eq(users.userid, formData.get("userid") as string));
+      });
+  } catch (err) {
+    if (err instanceof postgres.PostgresError) {
+      return { error: err.message };
+    }
+    return { error: "Unknown error occurred" };
+  }
+  // On success, redirect
+  redirect("/profileInfo/" + formData.get("userid"));
 }
 
 export async function removeUser(id: number) {
@@ -77,7 +104,7 @@ const userid = formData.get("userid") as string; // Moved declaration here
       .from(users)
       .where(and(
         eq(users.userid, userid),
-        eq(users.pin, Number(formData.get("pin")))
+        eq(users.pin, formData.get("pin") as string)
       ));
       
     console.log(result.length < 1);

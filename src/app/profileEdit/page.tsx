@@ -30,7 +30,9 @@ console.log("Session:", session);
           priority
         />
     <div className="flex flex-col justify-center items-center gap-5 border-2 rounded-md p-6">
-      <ContactEdit />
+      {resps.map(resp => (
+        <ContactEdit user={resp} key={resp.id} />
+      ))}
       <Link
         className="text-center underline font-semibold text-lg"
         href="/"
