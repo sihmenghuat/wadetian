@@ -1,4 +1,5 @@
 import { getResponses } from "@/app/actions";
+import { updBalance } from "@/app/actions";
 import { LogoutForm } from "@/app/components/contact-logout";
 import { ProfileItem } from "../../components/profile-item";
 import Image from "next/image";
@@ -10,12 +11,16 @@ import TransactionTableClient from "@/app/components/transaction-table-client";
 export default async function ProfileItemPage({ searchParams }: { searchParams?: { page?: string } }) {
   const cookie = (await cookies()).get("session")?.value;
   const session = await decrypt(cookie);
-console.log("Session:", session);
+  console.log("Session:", session);
   if (!session || !session.userId) {
     permanentRedirect(`/`);
   }
   console.log("Session userId:", session.userId);
   const userid = session.userId.toString();
+
+  // Update balance if needed
+  await updBalance(userid);
+
   const resps = userid ? await getResponses(userid) : [];
   console.log("User ID:", userid);
   const page = Number(searchParams?.page) || 1;

@@ -26,7 +26,7 @@ export function TransactionTable({ transactions, total, page, pageSize, onPageCh
           <tr className="bg-gray-100">
             <th className="border px-2 py-1">Date</th>
             <th className="border px-2 py-1">Reference</th>
-            <th className="border px-2 py-1">Amount</th>
+            <th className="border px-2 py-1">Points</th>
             <th className="border px-2 py-1">XID</th>
           </tr>
         </thead>

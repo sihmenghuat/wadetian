@@ -162,6 +162,20 @@ export async function getResponses(userid: string) {
   return await db.select().from(users).where(eq(users.userid, userid));
 }
 
+export async function updBalance(userid: string) {
+  await db.transaction(async (tx) => {
+    const [{ sumbal }] = await tx
+      .select({ sumbal: sql`COALESCE(SUM(${balancedb.balance}), 0)` })
+      .from(balancedb)
+      .where(eq(balancedb.userid, userid));
+    await tx.update(users)
+      .set({
+        points: Number(sumbal),
+      })
+      .where(eq(users.userid, userid));
+  });
+}
+
 export async function qrcodeCollect(formData: FormData)  {
   console.log("Collect from merc:", formData.get("userid"),formData.get("mercid"),formData.get("points"));
   try {
