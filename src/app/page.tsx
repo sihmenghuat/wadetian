@@ -24,9 +24,9 @@ export default function Home() {
       </Link>
             <Link
         className="text-center underline font-semibold text-lg"
-        href="/forgot"
+        href="/forgotPin"
       >
-        Forgot Password
+        Forgot PIN
       </Link>
     </div></main>
     </div>
