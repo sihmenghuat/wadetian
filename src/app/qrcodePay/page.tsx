@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { decrypt } from "@/app/lib/session";
 import { permanentRedirect } from "next/navigation";
 import QrCodePay from "../components/qrcode-pay";
-import { qrcodePay } from "../actions";
 
 export default async function QRcodePayPage() {
   const cookie = (await cookies()).get("session")?.value;
@@ -21,9 +20,7 @@ console.log("Session:", session);
       <main>
       <div className="flex flex-col justify-center items-center border-2 gap-5 rounded-md p-6">
       <QrCodePay userid={userid} />
-      <form className="flex items-center flex-col gap-3" action={qrcodePay}>
-      </form>
-    </div>
+      </div>
         <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
           <a
             className="flex items-center gap-2 hover:underline hover:underline-offset-4"

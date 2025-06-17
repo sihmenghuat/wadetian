@@ -356,7 +356,7 @@ export async function qrcodePay(formData: FormData)  {
     return { error: "Unknown error occurred" };
   }
   // Only redirect if no error
-  redirect("/responses");
+  redirect("/profileInfo/" + formData.get("userid"));
   // Ensure the function returns void
 }
 

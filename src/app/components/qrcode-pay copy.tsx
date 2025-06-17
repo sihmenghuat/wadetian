@@ -6,7 +6,6 @@ import { qrcodePay } from "../actions";
 export default function QrCodePay({ userid }: { userid: string }) {
   const [qrData, setQrData] = useState("");
   const [scanError, setScanError] = useState("");
-  const [formData, setFormData] = useState<Record<string, string> | null>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const qrRegionId = "qr-reader-region";
   console.log("User ID:", userid);
@@ -53,40 +52,6 @@ export default function QrCodePay({ userid }: { userid: string }) {
     };
   }, []);
 
-  useEffect(() => {
-  if (!qrData) return;
-  let parsed: Record<string, string> | null = null;
-  try {
-    parsed = JSON.parse(qrData);
-  } catch {
-    // ignore parse error
-  }
-  if (parsed && typeof parsed === "object" && parsed.qrhash) {
-    (async () => {
-      const { getQrcode } = await import("../actions");
-      const result = await getQrcode(parsed.qrhash);
-      console.log("getQrcode result", result);
-      // result is likely an array, get the first item
-      const qr = Array.isArray(result) ? result[0] : result;
-      if (qr) {
-        const merged = {
-          points: qr.points?.toString() ?? "",
-          payType: qr.paytype ?? "",
-          reference: qr.reference ?? "",
-          mercid: qr.mercid ?? "",
-          hashid: parsed.qrhash,
-        };
-        console.log("Setting formData", merged);
-        setFormData(merged);
-      } else {
-        setFormData(null);
-      }
-    })();
-  } else {
-    setFormData(null);
-  }
-}, [qrData]);
-
   return (
     <div>
       <main>
@@ -101,9 +66,22 @@ export default function QrCodePay({ userid }: { userid: string }) {
                 className="w-64 h-48 mb-2 bg-gray-200 rounded"
               />
             )}
-            {qrData && formData && (() => {
-              console.log("Parsed formData:", formData);
-              if (formData.payType !== "Pay") {
+            {qrData && (() => {
+              let parsed = null;
+              try {
+                
+                parsed = JSON.parse(qrData);
+              } catch {
+                // ignore parse error
+              }
+              if (!parsed || typeof parsed !== "object") {
+                return (
+                  <div className="p-2 bg-gray-100 rounded text-sm w-full break-words mb-2">
+                    <strong>Invalid QR Data:</strong> {qrData}
+                  </div>
+                );
+              }
+              if (parsed.payType !== "Pay") {
                 return (
                   <div className="p-2 bg-red-100 rounded text-sm w-full break-words mb-2 flex flex-col items-center">
                     <div className="text-red-600 font-semibold mb-2">Error: payType is not &#39;Pay&#39;.</div>
@@ -121,30 +99,13 @@ export default function QrCodePay({ userid }: { userid: string }) {
                     </button>
                   </div>
                 );
-              }
+              }              
               return (
-                <PayFormWithError parsed={formData} userid={userid} />
+                <PayFormWithError parsed={parsed} userid={userid} />
               );
             })()}
             {scanError && (
               <div className="text-red-500 text-xs mt-1">Please scan again!</div>
-            )}
-            {!formData && qrData && (
-                  <div className="p-2 bg-red-100 rounded text-sm w-full break-words mb-2 flex flex-col items-center">
-                    <div className="text-red-600 font-semibold mb-2">Error: QR code is &#39;Invalid&#39;.</div>
-                    <button
-                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                      onClick={() => {
-                        setQrData("");
-                        setScanError("");
-                        if (typeof window !== "undefined") {
-                          window.location.reload();
-                        }
-                      }}
-                    >
-                      Ok
-                    </button>
-                  </div>
             )}
           </div>
         </div>
