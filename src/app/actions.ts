@@ -176,6 +176,13 @@ export async function updBalance(userid: string) {
   });
 }
 
+export async function getQrcode(hashid: string) {
+  return await db
+      .select({ points: qrcodedb.points, paytype: qrcodedb.paytype, reference: qrcodedb.reference, jsondata: qrcodedb.jsondata, mercid: qrcodedb.userid })
+      .from(qrcodedb)
+      .where(eq(qrcodedb.hashid, hashid));
+}
+
 export async function qrcodeCollect(formData: FormData)  {
   console.log("Collect from merc:", formData.get("userid"),formData.get("mercid"),formData.get("points"));
   try {
@@ -234,7 +241,7 @@ export async function qrcodeCollect(formData: FormData)  {
       console.error("qrcodeCollect:",err.message);
     }
   }
-  redirect("/responses");
+  redirect("/profileInfo/" + formData.get("userid"));
   // Ensure the function returns void
 }
 

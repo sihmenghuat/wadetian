@@ -3,7 +3,7 @@
 import { qrcodeGen } from "../actions";
 import { useRouter, useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import crypto from 'crypto';
 
 export function getRandomString(length: number): string {
@@ -14,14 +14,19 @@ export default function QrCodeGenConfirm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [qrhash, setQrhash] = useState("");
+
+  useEffect(() => {
+    setQrhash(getRandomString(16));
+  }, []);
 
   const mercid = searchParams.get("uid") || "";
   const points = searchParams.get("points") || "";
   const payType = searchParams.get("payType") || "";
   const reference = searchParams.get("reference") || "";
-  const qrhash = getRandomString(16);
-  console.log(qrhash);;
-  const qrValue = JSON.stringify({ mercid, points, payType, reference, qrhash });
+  console.log(qrhash);
+//  const qrValue = JSON.stringify({ mercid, points, payType, reference, qrhash });
+    const qrValue = JSON.stringify({ mercid, qrhash });
 
   const handleConfirm = async () => {
     setLoading(true);
@@ -35,7 +40,7 @@ export default function QrCodeGenConfirm() {
     await qrcodeGen(formData);
     setLoading(false);
     // The server action will redirect, but fallback just in case
-    router.push("/responses");
+    router.push("/qrcodeGen/success");
   };
 
   return (
