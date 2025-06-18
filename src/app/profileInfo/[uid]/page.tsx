@@ -93,7 +93,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
           />
           Generate QR Codes →
         </a>
-                <a
+        <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href={`/profileEdit`}
 //          target="_blank"
@@ -108,6 +108,21 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
           />
           Edit Profile       
           </a>
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href={`/myQrcode`}
+//          target="_blank"
+//          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/qrcode.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          My QR Code      
+          </a>          
       </footer>
     </div>   
   );
