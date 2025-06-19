@@ -2,7 +2,7 @@
 
 import React from "react";
 import { contactEditAction } from "../actions";
-import { useActionState } from "react";
+import { useFormState } from "react-dom";
 import type { UserSelect } from "@/db/schema";
 
 interface UserEditProps {
@@ -10,26 +10,19 @@ interface UserEditProps {
 }
 // This component is used to edit account by collecting user information through a form.
 export function ContactEdit({ user }: UserEditProps) {
-  const [state, formAction] = useActionState(contactEditAction, { error: "" });
-  // Add local state for pin and temppin
-  const [pin, setPin] = React.useState("");
-  const [temppin, setTemppin] = React.useState("");
-  const [pinError, setPinError] = React.useState("");
-  const [showPin, setShowPin] = React.useState(false);
-  const [showTempPin, setShowTempPin] = React.useState(false);
-  // Custom submit handler to validate temppin === pin
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    if (pin !== temppin) {
-      e.preventDefault();
-      setPinError("PINs do not match");
-      return;
+  // Reducer wrapper for useFormState
+  async function contactEditReducer(_prevState: { error: string }, formData: FormData) {
+    const result = await contactEditAction(formData);
+    if (result && typeof result === "object" && "error" in result) {
+      return { error: result.error };
     }
-    setPinError("");
-    // Let the form submit as normal
-  };
+    return { error: "" };
+  }
+
+  const [state, formAction] = useFormState(contactEditReducer, { error: "" });
 
   return (
-    <form className="flex items-center flex-col gap-3" action={formAction} onSubmit={handleSubmit}>
+    <form className="flex items-center flex-col gap-3" action={formAction}>
       <input type="hidden" name="userid" value={user.userid} />
       <h2 className="text-2xl font-semibold">Edit Profile</h2>
       {state.error && (
@@ -37,51 +30,24 @@ export function ContactEdit({ user }: UserEditProps) {
           {state.error}
         </div>
       )}
-      {pinError && (
-        <div className="w-full text-red-600 bg-red-50 border border-red-200 rounded p-2 text-center mb-2">
-          {pinError}
-        </div>
-      )}
-      <div className="w-full relative">
-        <input
-          type={showPin ? "text" : "password"}
-          placeholder="PIN" required
-          name="pin"
-          defaultValue={user.pin ? user.pin : pin}
-          onChange={e => setPin(e.target.value)}
-          maxLength={4}
-          pattern="\d{4}"
-          className="p-2.5 text-lg w-full rounded-md focus:ring-2 focus:ring-blue-300 bg-gray-50 border border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 focus:outline-none pr-16"
-        />
-        <button
-          type="button"
-          tabIndex={-1}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-700 underline bg-transparent border-none cursor-pointer"
-          onClick={() => setShowPin(v => !v)}
-        >
-          {showPin ? "Hide" : "Show"}
-        </button>
-      </div>
-      <div className="w-full relative">
-        <input
-          type={showTempPin ? "text" : "password"}
-          placeholder="Retype PIN"
-          name="temppin"
-          defaultValue={user.pin ? user.pin : pin}
-          onChange={e => setTemppin(e.target.value)}
-          maxLength={4}
-          pattern="\d{4}"
-          className="p-2.5 text-lg w-full rounded-md focus:ring-2 focus:ring-blue-300 bg-gray-50 border border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 focus:outline-none pr-16"
-        />
-        <button
-          type="button"
-          tabIndex={-1}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-700 underline bg-transparent border-none cursor-pointer"
-          onClick={() => setShowTempPin(v => !v)}
-        >
-          {showTempPin ? "Hide" : "Show"}
-        </button>
-      </div>
+      <input
+        type="password"
+        placeholder="PIN" required
+        name="pin"
+        defaultValue={user.pin || ""}
+        maxLength={4}
+        pattern="\d{4}"
+        className="p-2.5 text-lg w-full rounded-md focus:ring-2 focus:ring-blue-300 bg-gray-50 border border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 focus:outline-none"
+      />
+      <input
+        type="password"
+        placeholder="Retype PIN"
+        name="temppin"
+        defaultValue={user.pin || ""}
+        maxLength={4}
+        pattern="\d{4}"
+        className="p-2.5 text-lg w-full rounded-md focus:ring-2 focus:ring-blue-300 bg-gray-50 border border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 focus:outline-none"
+      />
       <input
         type="text"
         placeholder="Contact Number" maxLength={50}
