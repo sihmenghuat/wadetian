@@ -122,7 +122,22 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
             height={16}
           />
           My QR Code      
-          </a>          
+          </a>
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href={`/directPay`}
+//          target="_blank"
+//          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/qrcode.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          Direct Pay      
+          </a>           
       </footer>
     </div>   
   );
