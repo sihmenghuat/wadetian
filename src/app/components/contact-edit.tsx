@@ -2,10 +2,6 @@
 
 import React from "react";
 import { contactEditAction } from "../actions";
-<<<<<<< HEAD
-=======
-import { useFormState } from "react-dom";
->>>>>>> cc2cdf0 (202506192016)
 import type { UserSelect } from "@/db/schema";
 
 interface UserEditProps {
@@ -21,20 +17,7 @@ async function contactEditReducer(_prevState: { error: string }, formData: FormD
 }
 // This component is used to edit account by collecting user information through a form.
 export function ContactEdit({ user }: UserEditProps) {
-<<<<<<< HEAD
   const [state, formAction] = React.useActionState(contactEditReducer, { error: "" });
-=======
-  // Reducer wrapper for useFormState
-  async function contactEditReducer(_prevState: { error: string }, formData: FormData) {
-    const result = await contactEditAction(formData);
-    if (result && typeof result === "object" && "error" in result) {
-      return { error: result.error };
-    }
-    return { error: "" };
-  }
-
-  const [state, formAction] = useFormState(contactEditReducer, { error: "" });
->>>>>>> cc2cdf0 (202506192016)
 
   return (
     <form className="flex items-center flex-col gap-3" action={formAction}>
@@ -48,10 +31,7 @@ export function ContactEdit({ user }: UserEditProps) {
       <input
         type="password"
         placeholder="PIN" required
-<<<<<<< HEAD
         title="PIN Must be 4 digits"
-=======
->>>>>>> cc2cdf0 (202506192016)
         name="pin"
         defaultValue={user.pin || ""}
         maxLength={4}
@@ -60,12 +40,8 @@ export function ContactEdit({ user }: UserEditProps) {
       />
       <input
         type="password"
-<<<<<<< HEAD
         placeholder="Retype PIN" 
         title="Must match PIN"
-=======
-        placeholder="Retype PIN"
->>>>>>> cc2cdf0 (202506192016)
         name="temppin"
         defaultValue={user.pin || ""}
         maxLength={4}
