@@ -1,9 +1,9 @@
 "use client"
 
 import { contactUsAction } from "../actions";
-import { useFormState } from "react-dom";
+import React from "react";
 
-// Reducer wrapper for useFormState
+// Reducer wrapper for useActionState
 async function contactUsReducer(_prevState: { error: string }, formData: FormData) {
   const result = await contactUsAction(formData);
   if (result && typeof result === "object" && "error" in result) {
@@ -14,7 +14,7 @@ async function contactUsReducer(_prevState: { error: string }, formData: FormDat
 
 // This component is used to create a new account by collecting user information through a form.
 export function ContactForm() {
-  const [state, formAction] = useFormState(contactUsReducer, { error: "" });
+  const [state, formAction] = React.useActionState(contactUsReducer, { error: "" });
 
   return (
     <form className="flex items-center flex-col gap-3" action={formAction}>

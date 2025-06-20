@@ -12,7 +12,7 @@ export function ProfileItem({ user }: UserItemProps) {
         <p className="font-semibold mb-1">User ID: {user.userid}</p>
         <p className="text-gray-600 text-sm mb-2">Contact No.:{user.contactno}</p>
         <p className="text-gray-600 text-sm mb-2">Email: {user.email}</p>
-        <p className="text-gray-600">Hobby: {user.hobby}</p>
+        <p className="text-gray-600">Name etc.: {user.hobby}</p>
         <p className="font-semibold mb-1">Balance: {user.points} points</p>
       </div>
     </li>
