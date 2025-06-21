@@ -125,7 +125,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
           </a>
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href={`/directPay`}
+          href={`/qrcodeScan`}
 //          target="_blank"
 //          rel="noopener noreferrer"
         >
@@ -136,7 +136,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
             width={16}
             height={16}
           />
-          Direct Pay      
+          Scan QR Code      
           </a>           
       </footer>
     </div>   
