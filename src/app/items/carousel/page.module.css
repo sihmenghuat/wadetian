@@ -1,0 +1,116 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.carousel {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 480px; /* Set to your desired card height */
+  scroll-snap-type: y mandatory;
+}
+
+.card {
+  position: relative;
+  min-width: unset;
+  max-width: 100%;
+  min-height: 480px;
+  max-height: 640px;
+  height: 480px;
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0; /* Remove extra padding if present */
+  overflow: hidden;
+}
+
+.mediaImage,
+.mediaVideo {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  object-fit: cover;
+  background: #000;
+  display: block;
+  margin: 0; /* Remove margin so media fills the card */
+  flex: 1 1 auto; /* Allow media to grow and fill the card */
+}
+
+.noMedia {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  color: #888;
+  border-radius: 6px;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+
+.overlayText {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  color: #63f546;
+  /*background: linear-gradient(0deg, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.2) 100%, transparent 100%);*/
+  padding: 1.2rem 1rem 1rem 1rem;
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+.overlayText h3 {
+  margin: 0 0 0.3em 0;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.overlayText p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+.uploadLink {
+  margin-top: 2rem;
+  text-align: right;
+}
+
+.uploadLink a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.uploadLink a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .container {
+    padding: 0.5rem;
+  }
+  .carousel {
+    gap: 0.5rem;
+  }
+  .card {
+    min-width: 90vw;
+    max-width: 95vw;
+    padding: 0.75rem;
+  }
+  .heading h2 {
+    font-size: 1.2rem;
+  }
+  .heading h3 {
+    font-size: 1rem;
+  }
+}
