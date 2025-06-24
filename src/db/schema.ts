@@ -20,6 +20,15 @@ export const users = pgTable("users", {
 );
 export type UserSelect = typeof users.$inferSelect;
 
+export const items = pgTable('items', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  type: text('type').notNull(),
+  mediaUrl: text('media_url'), // for picture or video
+  mercid: text('mercid').notNull(),
+});
+
 export const menuItems = pgTable('menu_items', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
