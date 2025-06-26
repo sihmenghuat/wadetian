@@ -13,7 +13,6 @@ type Item = {
 export default function ItemsCarouselPage() {
   const [itemList, setItemList] = React.useState<Item[]>([]);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
 
   const scrollByCard = (direction: "up" | "down") => {
     if (!carouselRef.current) return;
@@ -32,7 +31,7 @@ export default function ItemsCarouselPage() {
 
   return (
     <div className={styles.container}>
-      <button onClick={() => scrollByCard("up")}>▲</button>
+      <button className="bg-blue-500 text-white text-sm px-1 py-0.5 rounded hover:bg-blue-700 transition" onClick={() => scrollByCard("up")}>▲</button>
       <div ref={carouselRef} className={styles.carousel}>
         {itemList.length === 0 && <p>No items found.</p>}
         {itemList.map(item => (
@@ -42,7 +41,11 @@ export default function ItemsCarouselPage() {
             onClick={e => {
               const video = (e.currentTarget as HTMLDivElement).querySelector("video");
               if (video) {
-                (video as HTMLVideoElement).play();
+                if (video.paused) {
+                  video.play();
+                } else {
+                  video.pause();
+                }
               }
             }}
           >
@@ -71,7 +74,7 @@ export default function ItemsCarouselPage() {
           </div>
         ))}
       </div>
-      <button onClick={() => scrollByCard("down")}>▼</button>
+      <button className="bg-blue-500 text-white text-sm px-1 py-0.5 rounded hover:bg-blue-700 transition" onClick={() => scrollByCard("down")}>▼</button>
     </div>
   );
 }
