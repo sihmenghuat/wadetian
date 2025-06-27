@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import styles from "./page.module.css";
+import { LogoutForm } from "@/app/components/contact-logout";
 
 type Item = {
   id: number;
@@ -12,6 +13,7 @@ type Item = {
 
 export default function ItemsCarouselPage() {
   const [itemList, setItemList] = React.useState<Item[]>([]);
+  const [userSession, setUserSession] = React.useState<{ userId: string | null, userType: string | null }>({ userId: null, userType: null });
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const scrollByCard = (direction: "up" | "down") => {
@@ -27,11 +29,15 @@ export default function ItemsCarouselPage() {
     fetch("/api/items")
       .then(res => res.json())
       .then(data => setItemList(data));
+    fetch("/api/session")
+      .then(res => res.json())
+      .then(data => setUserSession(data));
   }, []);
 
   return (
     <div className={styles.container}>
-      <button className="bg-blue-500 text-white text-sm px-1 py-0.5 rounded hover:bg-blue-700 transition" onClick={() => scrollByCard("up")}>▲</button>
+      <div className="mb-2 text-xs text-gray-600">UserID: {userSession.userId ?? "-"} | UserType: {userSession.userType ?? "-"}</div>
+      <button className="bg-green-300 text-white text-sm px-1 py-0.5 rounded hover:bg-green-700 transition" onClick={() => scrollByCard("up")}>▲</button>
       <div ref={carouselRef} className={styles.carousel}>
         {itemList.length === 0 && <p>No items found.</p>}
         {itemList.map(item => (
@@ -74,7 +80,48 @@ export default function ItemsCarouselPage() {
           </div>
         ))}
       </div>
-      <button className="bg-blue-500 text-white text-sm px-1 py-0.5 rounded hover:bg-blue-700 transition" onClick={() => scrollByCard("down")}>▼</button>
+      <button className="bg-green-300 text-white text-sm px-1 py-0.5 rounded hover:bg-green-700 transition" onClick={() => scrollByCard("down")}>▼</button>
+      {userSession.userId && (
+        <div className={styles.loginWrapper}>
+          <button
+            className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            onClick={() => {
+              window.location.href = "/qrcodeScan";
+            }}
+          >
+            Scan QR
+          </button>
+          <button
+            className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            onClick={() => {
+              window.location.href = "/profileInfo";
+            }}
+          >
+            Profile
+          </button>
+          <LogoutForm userid={userSession.userId ?? ""} />
+        </div>
+      )}
+      {!userSession.userId && (
+        <div className={styles.loginWrapper}>
+          <button
+            className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            onClick={() => {
+              window.location.href = "/login";
+            }}
+          >
+            Login
+          </button>
+          <button
+            className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            onClick={() => {
+              window.location.href = "/profileCreate";
+            }}
+          >
+            Create Account
+          </button>
+        </div>
+      )}
     </div>
   );
 }

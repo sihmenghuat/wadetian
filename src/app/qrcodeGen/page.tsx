@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import crypto from 'crypto';
+import Image from "next/image";
+import Link from "next/link";
 
 export function getRandomString(length: number): string {
   return crypto.randomBytes(length).toString('hex').slice(0, length);
@@ -16,9 +18,16 @@ export default function QrCodeGenConfirm() {
   const [loading, setLoading] = useState(false);
   const [qrhash, setQrhash] = useState("");
 
-  useEffect(() => {
-    setQrhash(getRandomString(16));
-  }, []);
+useEffect(() => {
+  const storedHash = localStorage.getItem("qrhash");
+  if (storedHash) {
+    setQrhash(storedHash);
+  } else {
+    const newHash = getRandomString(16);
+    setQrhash(newHash);
+    localStorage.setItem("qrhash", newHash);
+  }
+}, []);
 
   const mercid = searchParams.get("uid") || "";
   const points = searchParams.get("points") || "";
@@ -38,12 +47,14 @@ export default function QrCodeGenConfirm() {
     formData.append("reference", reference);
     formData.append("qrhash", qrhash);
     await qrcodeGen(formData);
+    localStorage.removeItem("qrhash");
     setLoading(false);
     // The server action will redirect, but fallback just in case
-    router.push("/qrcodeGen/success");
+    router.push("/");
   };
 
   return (
+    <main>
     <div className="flex flex-col items-center justify-center border-2 gap-5 rounded-md p-6">
       <h2 className="text-lg font-bold">Confirm Generated QR Code</h2>
       <QRCodeSVG value={qrValue} size={200} />
@@ -62,5 +73,21 @@ export default function QrCodeGenConfirm() {
         {loading ? "Confirming..." : "Confirm Generated QR code"}
       </button>
     </div>
+    <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+      <Link
+        className="flex items-center gap-2 text-center underline font-semibold text-lg"
+        href={`/qrcode/${mercid}`}
+      >
+        <Image
+        aria-hidden
+        src="/arrow-left.svg"
+        alt="Globe icon"
+        width={16}
+        height={16}
+        />
+        Back
+      </Link>
+    </footer>    
+    </main>
   );
 }

@@ -1,12 +1,13 @@
 import { getResponses } from "@/app/actions";
 import { updBalance } from "@/app/actions";
 import { LogoutForm } from "@/app/components/contact-logout";
-import { ProfileItem } from "../../components/profile-item";
+import { ProfileItem } from "../components/profile-item";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import { decrypt } from "@/app/lib/session";
 import { permanentRedirect } from "next/navigation";
 import TransactionTableClient from "@/app/components/transaction-table-client";
+import Link from "next/link";
 
 export default async function ProfileItemPage({ searchParams }: { searchParams?: { page?: string } }) {
   const cookie = (await cookies()).get("session")?.value;
@@ -17,6 +18,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
   }
   console.log("Session userId:", session.userId);
   const userid = session.userId.toString();
+  const userType = session.userType;
 
   // Update balance if needed
   await updBalance(userid);
@@ -45,14 +47,26 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
         <TransactionTableClient userid={userid} initialPage={page} pageSize={pageSize} />
       </div>
       <LogoutForm userid={userid} />
+      <Link
+        className="flex items-center gap-2 text-center underline font-semibold text-lg"
+        href="/"
+      >
+        <Image
+        aria-hidden
+        src="/arrow-left.svg"
+        alt="Globe icon"
+        width={16}
+        height={16}
+        />
+        Back
+      </Link>
     </div>
     </main>
     <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+      {userType === "user" && (
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="/qrcodePay"
-//          target="_blank"
-//          rel="noopener noreferrer"
+          href="/qrcodeScan"
         >
           <Image
             aria-hidden
@@ -61,28 +75,13 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
             width={16}
             height={16}
           />
-          Scan to Pay
+          Scan QR
         </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="/qrcodeCollect"
-//          target="_blank"
-//          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/collect.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Scan to Collect
-        </a>
+      )}
+      {userType === "merc" && (
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href={`/qrcode/${userid}`}
-//          target="_blank"
-//          rel="noopener noreferrer"
         >
           <Image
             aria-hidden
@@ -93,6 +92,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
           />
           Generate QR Codes →
         </a>
+      )}
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href={`/profileEdit`}
@@ -122,22 +122,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
             height={16}
           />
           My QR Code      
-          </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href={`/qrcodeScan`}
-//          target="_blank"
-//          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/qrcode.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Scan QR Code      
-          </a>           
+          </a>         
       </footer>
     </div>   
   );

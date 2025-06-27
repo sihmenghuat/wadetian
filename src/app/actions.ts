@@ -7,7 +7,8 @@ import { revalidatePath } from "next/cache";
 import { redirect, permanentRedirect } from "next/navigation";
 import postgres from "postgres";
 import { createSession, deleteSession } from "@/app/lib/session";
-import { use } from "react";
+import { decrypt } from "@/app/lib/session";
+import { cookies } from "next/headers";
 
 // Helper type for error return
 export type ActionResult = { error: string } | void;
@@ -132,7 +133,7 @@ export async function loginAction(formData: FormData): Promise<void> {
         lastlogin: new Date(),
       })
       .where(eq(sessiondb.userid, userid));
-    permanentRedirect(`/profileInfo/${userid}`);
+    permanentRedirect(`/`);
   }
 }
 
@@ -364,4 +365,15 @@ export async function qrcodeGen(formData: FormData): Promise<void> {
     }
   }
   redirect("/qrcodelist");
+}
+
+export async function getUserSession() {
+    const cookieStore = await cookies();
+    const cookie = cookieStore.get("session")?.value;
+    if (!cookie) return { userId: null, userType: null };
+    const session = await decrypt(cookie);
+    return {
+        userId: session?.userId ?? null,
+        userType: session?.userType ?? null
+    };
 }

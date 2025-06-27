@@ -7,8 +7,8 @@ import { decrypt } from "@/app/lib/session";
 import { permanentRedirect } from "next/navigation";
 
 export default async function ProfileEditPage() {
-  const cookie = (await cookies()).get("session")?.value;
-  const session = await decrypt(cookie);
+const cookie = (await cookies()).get("session")?.value;
+const session = await decrypt(cookie);
 console.log("Session:", session);
   if (!session || !session.userId) {
     permanentRedirect(`/`);
@@ -34,10 +34,17 @@ console.log("Session:", session);
         <ContactEdit user={resp} key={resp.id} />
       ))}
       <Link
-        className="text-center underline font-semibold text-lg"
-        href="/"
+        className="flex items-center gap-2 text-center underline font-semibold text-lg"
+        href="/profileInfo"
       >
-        Back to Login
+        <Image
+        aria-hidden
+        src="/arrow-left.svg"
+        alt="Globe icon"
+        width={16}
+        height={16}
+        />
+        Back
       </Link>
     </div>
       </main>

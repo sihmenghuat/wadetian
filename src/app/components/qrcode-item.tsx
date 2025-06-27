@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function QrCodeForm() {
   const params = useParams<{ uid: string }>();

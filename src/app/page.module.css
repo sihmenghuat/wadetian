@@ -94,6 +94,14 @@
   text-decoration: underline;
 }
 
+.loginWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 600px) {
   .container {
