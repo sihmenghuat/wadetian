@@ -71,7 +71,7 @@ export async function contactEditAction(formData: FormData): Promise<ActionResul
     }
     return { error: "Unknown error occurred" };
   }
-  redirect("/profileInfo/" + formData.get("userid"));
+  redirect("/profileInfo");
 }
 
 export async function removeUser(id: number): Promise<void> {

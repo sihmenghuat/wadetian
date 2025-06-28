@@ -4,8 +4,9 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-2 pb-20 gap-16 sm:p-8 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+    <main>
+    <div className="grid items-center justify-items-center p-5 pb-5 gap-16 sm:p-8 font-[family-name:var(--font-geist-sans)]">
+      <main className="flex flex-col gap-[25px] items-center sm:items-start">
         <Image
           className="dark:invert"
           src="/galney.png"
@@ -14,16 +15,26 @@ export default function Home() {
           height={150}
           priority
         />
-    <div className="flex flex-col justify-center items-center gap-5 border-2 rounded-md p-6">
-      <ContactForm />
-      <Link
-        className="text-center underline font-semibold text-lg"
-        href="/"
-      >
-        Back to Login
-      </Link>
-    </div>
+      <div className="flex flex-col justify-center items-center gap-5 border-2 rounded-md p-6">
+        <ContactForm />
+      </div>
       </main>
-    </div>
+  </div>
+  <footer className="flex gap-[24px] flex-wrap items-center justify-center">
+    <Link
+      className="flex items-center gap-2 text-center underline font-semibold text-lg"
+      href={`/login`}
+    >
+      <Image
+      aria-hidden
+      src="/arrow-left.svg"
+      alt="Globe icon"
+      width={16}
+      height={16}
+      />
+      Back
+    </Link>
+  </footer>
+  </main>
   );
 }

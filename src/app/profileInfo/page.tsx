@@ -31,7 +31,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
   return (
     <div>
       <main>
-    <div className="flex flex-col justify-center items-center border-2 gap-5 rounded-md p-6">
+    <div className="flex flex-col justify-center items-center border-2 gap-2 rounded-md p-5">
       <h2 className="text-2xl font-bold text-center">User Profile Information</h2>
       {resps.length > 0 ? (
         <ul className="space-y-4">
@@ -47,8 +47,10 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
         <TransactionTableClient userid={userid} initialPage={page} pageSize={pageSize} />
       </div>
       <LogoutForm userid={userid} />
+    </div>
+    </main>
       <Link
-        className="flex items-center gap-2 text-center underline font-semibold text-lg"
+        className="flex items-center gap-2 text-center justify-center underline font-semibold text-lg"
         href="/"
       >
         <Image
@@ -60,8 +62,6 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
         />
         Back
       </Link>
-    </div>
-    </main>
     <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
       {userType === "user" && (
         <a

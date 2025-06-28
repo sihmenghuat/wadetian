@@ -264,7 +264,6 @@ useEffect(() => {
               <div className="text-red-500 text-xs mt-1">Please scan again!</div>
             )}
             {error && (
-
               <div className="flex flex-row w-full justify-center gap-2 text-red-600 font-semibold mt-2">{error}
               <button
               type="button"

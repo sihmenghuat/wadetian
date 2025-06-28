@@ -19,8 +19,8 @@ console.log("Session:", session);
   console.log("User ID:", userid);
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-2 pb-20 gap-16 sm:p-8 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+    <div className="grid items-center justify-items-center p-5 pb-5 gap-2 sm:p-8 font-[family-name:var(--font-geist-sans)]">
+      <main className="flex flex-col gap-[32px] items-center sm:items-start">
         <Image
           className="dark:invert"
           src="/galney.png"
@@ -33,6 +33,8 @@ console.log("Session:", session);
       {resps.map(resp => (
         <ContactEdit user={resp} key={resp.id} />
       ))}
+    </div>
+      </main>
       <Link
         className="flex items-center gap-2 text-center underline font-semibold text-lg"
         href="/profileInfo"
@@ -46,8 +48,6 @@ console.log("Session:", session);
         />
         Back
       </Link>
-    </div>
-      </main>
     </div>
   );
 }

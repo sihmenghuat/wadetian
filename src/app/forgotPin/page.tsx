@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function ForgotPinPage() {
@@ -33,7 +34,16 @@ export default function ForgotPinPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+    <main className="flex flex-col gap-[25px] p-5 items-center sm:items-start">
+            <Image
+              className="dark:invert"
+              src="/galney.png"
+              alt="Galney logo"
+              width={150}
+              height={150}
+              priority
+            />
+    <div className="flex flex-col items-center justify-center p-5">
       <h1 className="text-2xl font-bold mb-4">Forgot PIN</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full max-w-sm mb-4">
         <label htmlFor="email" className="font-medium">Enter your email address:</label>
@@ -54,13 +64,21 @@ export default function ForgotPinPage() {
       {message && <div className="p-2 border rounded bg-green-50 text-green-800 w-full max-w-sm text-center">{message}</div>}
       {error && <div className="p-2 border rounded bg-red-50 text-red-800 w-full max-w-sm text-center">{error}</div>}
       <div>
-        <Link
-        className="text-center underline font-semibold text-lg"
-        href="/"
-      >
-        Back to Login
-      </Link>
+    <Link
+      className="flex items-center gap-2 text-center underline font-semibold text-lg"
+      href={`/login`}
+    >
+      <Image
+      aria-hidden
+      src="/arrow-left.svg"
+      alt="Globe icon"
+      width={16}
+      height={16}
+      />
+      Back
+    </Link>
       </div>
     </div>
+  </main>
   );
 }
