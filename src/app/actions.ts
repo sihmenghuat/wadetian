@@ -364,7 +364,7 @@ export async function qrcodeGen(formData: FormData): Promise<void> {
       console.error(err.message);
     }
   }
-  redirect("/qrcodelist");
+  //redirect("/qrcodelist");
 }
 
 export async function getUserSession() {

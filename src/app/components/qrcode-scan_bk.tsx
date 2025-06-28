@@ -16,62 +16,50 @@ export default function QrCodeScan({ userid }: { userid: string }) {
   const qrRegionId = "qr-reader-region";
   console.log("User ID:", userid);
 
-useEffect(() => {
-  let html5QrCode: Html5Qrcode | null = null;
-
-  async function initCamera() {
-    try {
-      const { Html5Qrcode } = await import("html5-qrcode");
-
-      if (!qrRegionRef.current) {
-        console.warn("QR region not mounted");
-        return;
-      }
-
-      html5QrCode = new Html5Qrcode(qrRegionRef.current.id);
-      html5QrCodeRef.current = html5QrCode;
-
-      const devices = await Html5Qrcode.getCameras();
-      if (!devices || devices.length === 0) {
-        setScanError("No camera found");
-        return;
-      }
-
-      await html5QrCode.start(
-        devices[0].id,
-        { fps: 10, qrbox: 256 },
-        (decodedText: string) => {
-          setQrData(decodedText);
-          setScanError("");
-          html5QrCode?.stop();
-        },
-        (errorMessage: string) => {
-          console.warn("QR Code scan error:", errorMessage);
-          setScanError(errorMessage);
+  useEffect(() => {
+    let html5QrCode: Html5Qrcode | null = null;
+    if (typeof window !== "undefined") {
+      import("html5-qrcode").then(({ Html5Qrcode }) => {
+        //html5QrCode = new Html5Qrcode(qrRegionId);
+        if (qrRegionRef.current) {
+            html5QrCode = new Html5Qrcode(qrRegionRef.current.id);
         }
-      );
-    } catch (err: unknown) {
-      console.error("Camera initialization failed:", err);
-      if (err instanceof Error) {
-        setScanError(err.message);
-      } else {
-        setScanError("Unexpected camera error");
+        html5QrCodeRef.current = html5QrCode;
+        Html5Qrcode.getCameras().then((devices: { id: string }[]) => {
+          if (devices && devices.length) {
+            if (html5QrCode) {
+              html5QrCode
+                .start(
+                  devices[0].id,
+                  {
+                    fps: 10,
+                    qrbox: 256,
+                  },
+                  (decodedText: string) => {
+                    setQrData(decodedText);
+                    setScanError("");
+                    html5QrCode?.stop();
+                  },
+                  (errorMessage: string) => {
+                    console.warn("QR Code scan error:", errorMessage);
+                    setScanError(errorMessage);
+                  }
+                )
+                .catch((err: { message?: string }) => setScanError(err?.message || "Camera error"));
+            }
+          } else {
+            setScanError("No camera found");
+          }
+        });
+      });
+    }
+    return () => {
+      if (html5QrCodeRef.current) {
+        html5QrCodeRef.current.stop().catch(() => {});
+        html5QrCodeRef.current.clear();
       }
-    }
-  }
-
-  if (typeof window !== "undefined") {
-    initCamera();
-  }
-
-  return () => {
-    if (html5QrCodeRef.current) {
-      html5QrCodeRef.current.stop().catch(() => {});
-      html5QrCodeRef.current.clear();
-    }
-  };
+    };
   }, []);
-
 
   useEffect(() => {
     if (!qrData) return;

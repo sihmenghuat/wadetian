@@ -1,18 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
+import { useState, useEffect } from "react";
+import React from "react";
 
 export default function QrCodeForm() {
-  const params = useParams<{ uid: string }>();
-  const uid = params.uid || ""; // Fallback to empty string if uid is not available
-  console.log("UID from params:", params.uid);
+  const [userSession, setUserSession] = React.useState<{ userId: string | null, userType: string | null }>({ userId: null, userType: null });  
+  //const params = useParams<{ uid: string }>();
+  const uid = userSession.userId || ""; // Fallback to empty string if uid is not available
 
   const [points, setPoints] = useState("");
   const [payType, setPayType] = useState("");
   const [reference, setRefence] = useState("");
+
+  useEffect(() => {
+    fetch("/api/session")
+      .then(res => res.json())
+      .then(data => setUserSession(data));
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

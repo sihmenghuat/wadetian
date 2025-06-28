@@ -25,7 +25,7 @@ export default async function QRcodeScanPage() {
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
         <Link
           className="flex items-center gap-2 text-center underline font-semibold text-lg"
-          href="/profileInfo"
+          href="/"
         >
           <Image
           aria-hidden

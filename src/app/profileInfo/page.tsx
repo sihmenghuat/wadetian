@@ -81,7 +81,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
       {userType === "merc" && (
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href={`/qrcode/${userid}`}
+          href={`/qrcode`}
         >
           <Image
             aria-hidden

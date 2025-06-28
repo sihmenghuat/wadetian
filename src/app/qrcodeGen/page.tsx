@@ -7,16 +7,25 @@ import { useEffect, useState } from "react";
 import crypto from 'crypto';
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
 
 export function getRandomString(length: number): string {
   return crypto.randomBytes(length).toString('hex').slice(0, length);
 }
 
 export default function QrCodeGenConfirm() {
+  const [userSession, setUserSession] = React.useState<{ userId: string | null, userType: string | null }>({ userId: null, userType: null });  
+ 
   const searchParams = useSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [qrhash, setQrhash] = useState("");
+
+useEffect(() => {
+  fetch("/api/session")
+    .then(res => res.json())
+    .then(data => setUserSession(data));
+}, []);
 
 useEffect(() => {
   const storedHash = localStorage.getItem("qrhash");
@@ -29,7 +38,8 @@ useEffect(() => {
   }
 }, []);
 
-  const mercid = searchParams.get("uid") || "";
+  //const mercid = searchParams.get("uid") || "";
+  const mercid = userSession.userId || "";
   const points = searchParams.get("points") || "";
   const payType = searchParams.get("payType") || "";
   const reference = searchParams.get("reference") || "";
@@ -50,7 +60,7 @@ useEffect(() => {
     localStorage.removeItem("qrhash");
     setLoading(false);
     // The server action will redirect, but fallback just in case
-    router.push("/");
+    router.push("/qrcodelist");
   };
 
   return (
@@ -76,7 +86,7 @@ useEffect(() => {
     <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
       <Link
         className="flex items-center gap-2 text-center underline font-semibold text-lg"
-        href={`/qrcode/${mercid}`}
+        href={`/qrcode`}
       >
         <Image
         aria-hidden

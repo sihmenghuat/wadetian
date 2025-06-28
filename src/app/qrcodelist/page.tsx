@@ -1,26 +1,87 @@
 import { db } from "@/db";
-import { QrcodeList } from "@/app/components/qrcode-list";
 import { qrcodedb } from "@/db/schema";
+import { cookies } from "next/headers";
+import { decrypt } from "@/app/lib/session";
+import { permanentRedirect } from "next/navigation";
+import { eq, desc } from "drizzle-orm";
+import Image from "next/image";
+import Link from "next/link";
 
 export default async function QrcodelistPage() {
-  const resps = await getQrcode();
+  const cookie = (await cookies()).get("session")?.value;
+  const session = await decrypt(cookie);
+  if (!session || session.userType !== "merc") {
+    permanentRedirect(`/profileInfo`);
+  }
+  const userid = String(session.userId);
+  const resps = await getQrcode(userid);
 
   return (
-    <div className="flex flex-col justify-center items-center border-2 gap-5 rounded-md p-6">
+    <main>
+    <div className="flex flex-col justify-center items-center border-2 gap-5 rounded-md p-6 w-full max-w-4xl">
       <h2 className="text-2xl font-bold text-center">QR Code List</h2>
       {resps.length > 0 ? (
-        <ul className="space-y-4">
-          {resps.map(resp => (
-            <QrcodeList qrdata={resp} key={resp.id} />
-          ))}
-        </ul>
+        <div className="overflow-x-auto w-full">
+          <table className="min-w-full border text-sm">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="px-2 py-1 border">User Id</th>
+                <th className="px-2 py-1 border">Points</th>
+                <th className="px-2 py-1 border">Reference</th>
+                <th className="px-2 py-1 border">Type</th>
+                <th className="px-2 py-1 border">Created At</th>
+                <th className="px-2 py-1 border">Status</th>
+                <th className="px-2 py-1 border">Redeemed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resps.map(resp => (
+                <tr key={resp.id} className="text-center">
+                  <td className="border px-2 py-1">{resp.userid}</td>
+                  <td className="border px-2 py-1">{resp.points}</td>
+                  <td className="border px-2 py-1">{resp.reference}</td>
+                  <td className="border px-2 py-1">{resp.paytype}</td>
+                  <td className="border px-2 py-1">
+                    {resp.createdAt
+                      ? new Date(
+                          typeof resp.createdAt === 'string'
+                            ? resp.createdAt + 'Z'
+                            : resp.createdAt
+                        ).toLocaleString('en-SG', { timeZone: 'Asia/Singapore' })
+                      : '-'}
+                  </td>
+                  <td className="border px-2 py-1">{resp.status ?? '-'}</td>
+                  <td className="border px-2 py-1">{resp.redeemCnt > 0 ? 'Yes' : 'No'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p className="text-center text-gray-500 py-4">No QR code yet.</p>
       )}
     </div>
+    <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+      <Link
+        className="flex items-center gap-2 text-center underline font-semibold text-lg"
+        href={`/qrcode}`}
+      >
+        <Image
+        aria-hidden
+        src="/arrow-left.svg"
+        alt="Globe icon"
+        width={16}
+        height={16}
+        />
+        Back
+      </Link>
+    </footer>  
+    </main>
   );
 }
 
-async function getQrcode() {
-  return await db.select().from(qrcodedb);
+async function getQrcode(userid: string) {
+  return await db.select().from(qrcodedb)
+    .where(eq(qrcodedb.userid, userid))
+    .orderBy(desc(qrcodedb.createdAt));
 }
