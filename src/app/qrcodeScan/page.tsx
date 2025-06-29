@@ -9,9 +9,10 @@ export default async function QRcodeScanPage() {
   const cookie = (await cookies()).get("session")?.value;
   const session = await decrypt(cookie);
   console.log("Session:", session);
-  if (!session || !session.userId) {
+  if (!session || !session.userId || session.userType !== "user") {
     permanentRedirect(`/`);
   }
+
   console.log("Session userId:", session.userId);
   const userid = session.userId.toString();
   console.log("User ID:", userid);

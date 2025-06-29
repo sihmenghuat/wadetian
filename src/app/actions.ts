@@ -44,7 +44,7 @@ export async function contactUsAction(formData: FormData): Promise<ActionResult>
     }
     return { error: "Unknown error occurred" };
   }
-  redirect("/profileInfo/" + formData.get("userid"));
+  redirect("/profileInfo/");
 }
 
 export async function contactEditAction(formData: FormData): Promise<ActionResult> {
@@ -174,6 +174,13 @@ export async function updBalance(userid: string): Promise<void> {
   });
 }
 
+export async function getCountTransdb(userid: string) {
+  return await db
+    .select({ count: sql`COUNT(*)` })
+    .from(transdb)
+    .where(eq(transdb.userid, userid));
+}
+
 export async function getQrcode(hashid: string) {
   return await db
     .select({ points: qrcodedb.points, paytype: qrcodedb.paytype, reference: qrcodedb.reference, jsondata: qrcodedb.jsondata, mercid: qrcodedb.userid })
@@ -238,7 +245,7 @@ export async function qrcodeCollect(formData: FormData): Promise<void> {
       console.error("qrcodeCollect:", err.message);
     }
   }
-  redirect("/profileInfo/" + formData.get("userid"));
+  redirect("/profileInfo/");
 }
 
 export async function qrcodePay(formData: FormData): Promise<ActionResult> {
@@ -339,7 +346,7 @@ export async function qrcodePay(formData: FormData): Promise<ActionResult> {
     }
     return { error: "Unknown error occurred" };
   }
-  redirect("/profileInfo/" + formData.get("userid"));
+  redirect("/profileInfo/");
 }
 
 export async function qrcodeGen(formData: FormData): Promise<void> {

@@ -11,7 +11,7 @@ const cookie = (await cookies()).get("session")?.value;
 const session = await decrypt(cookie);
 console.log("Session:", session);
   if (!session || session && session.userType !== "merc") {
-    permanentRedirect(`/profileInfo`);
+    permanentRedirect(`/`);
   }
 
   return (

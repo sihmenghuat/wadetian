@@ -9,9 +9,9 @@ export async function middleware(request: NextRequest) {
     const response = NextResponse.next();
   // const cookie = (await cookies()).get("session")?.value;
     const cookie = request.cookies.get("session")?.value;
-    console.log("Cookie:", cookie);
+    //console.log("Cookie:", cookie);
     const session = await decrypt(cookie);
-    console.log("Session:", session);
+    //console.log("Session:", session);
     if (!session || !session.userId) {
         console.log("No session found");
         } else {
@@ -25,3 +25,10 @@ export async function middleware(request: NextRequest) {
   return response
   // Setting cookies on the response using the `ResponseCookies` API
 }
+
+export const config = {
+  matcher: [
+    // Exclude API routes, _next (static files), and favicon
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
+};

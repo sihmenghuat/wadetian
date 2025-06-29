@@ -81,7 +81,7 @@ export default function ItemsCarouselPage() {
         ))}
       </div>
       <button className="bg-green-300 text-white text-sm px-1 py-0.5 rounded hover:bg-green-700 transition" onClick={() => scrollByCard("down")}>▼</button>
-      {userSession.userId && (
+      {userSession.userId && userSession.userType === "user" && (
         <div className={styles.loginWrapper}>
           <button
             className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700 transition"
@@ -102,6 +102,27 @@ export default function ItemsCarouselPage() {
           <LogoutForm userid={userSession.userId ?? ""} />
         </div>
       )}
+      {userSession.userId && userSession.userType === "merc" && (
+        <div className={styles.loginWrapper}>
+          <button
+            className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            onClick={() => {
+              window.location.href = "/qrcode";
+            }}
+          >
+            Generate QR →
+          </button>
+          <button
+            className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            onClick={() => {
+              window.location.href = "/profileInfo";
+            }}
+          >
+            Profile
+          </button>
+          <LogoutForm userid={userSession.userId ?? ""} />
+        </div>
+      )}      
       {!userSession.userId && (
         <div className={styles.loginWrapper}>
           <button

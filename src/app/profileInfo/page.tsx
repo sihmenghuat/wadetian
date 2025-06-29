@@ -1,5 +1,5 @@
 import { getResponses } from "@/app/actions";
-import { updBalance } from "@/app/actions";
+import { updBalance, getCountTransdb } from "@/app/actions";
 import { LogoutForm } from "@/app/components/contact-logout";
 import { ProfileItem } from "../components/profile-item";
 import Image from "next/image";
@@ -22,11 +22,19 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
 
   // Update balance if needed
   await updBalance(userid);
+  // records count in transdb
+  const total = await getCountTransdb(userid) || 0;
+  const totalCount = total[0]?.count || 0; // 
 
   const resps = userid ? await getResponses(userid) : [];
-  console.log("User ID:", userid);
-  const page = Number(searchParams?.page) || 1;
+  //console.log("User ID:", userid);
   const pageSize = 10;
+  const safeTotalCount = Number(totalCount) || 0;
+  const safePageSize = Number(pageSize) || 10; // fallback to 10 if not set
+  const lastPage = Math.max(1, Math.ceil(safeTotalCount / safePageSize));
+  console.log("Total Count:", totalCount, "Last Page:", lastPage);
+  const page = Number(searchParams?.page) || lastPage;
+  console.log("Page:", page, "Last Page:", lastPage, "Count:", totalCount);
 
   return (
     <div>
@@ -90,7 +98,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
             width={16}
             height={16}
           />
-          Generate QR Codes →
+          Generate QR →
         </a>
       )}
         <a
@@ -101,7 +109,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
         >
           <Image
             aria-hidden
-            src="/qrcode.svg"
+            src="/profile.svg"
             alt="Globe icon"
             width={16}
             height={16}
