@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import styles from "./page.module.css";
-import { LogoutForm } from "@/app/components/contact-logout";
+//import { LogoutForm } from "@/app/components/contact-logout";
 
 type Item = {
   id: number;
@@ -36,7 +36,7 @@ export default function ItemsCarouselPage() {
 
   return (
     <div className={styles.container}>
-      <div className="mb-2 text-xs text-gray-600">UserID: {userSession.userId ?? "-"} | UserType: {userSession.userType ?? "-"}</div>
+      {userSession.userId && (<div className="mb-2 text-xs text-gray-600">ID: {userSession.userType ?? "-"} {userSession.userId ?? "-"}</div>)}
       <button className="bg-green-300 text-white text-sm px-1 py-0.5 rounded hover:bg-green-700 transition" onClick={() => scrollByCard("up")}>▲</button>
       <div ref={carouselRef} className={styles.carousel}>
         {itemList.length === 0 && <p>No items found.</p>}
@@ -99,7 +99,7 @@ export default function ItemsCarouselPage() {
           >
             Profile
           </button>
-          <LogoutForm userid={userSession.userId ?? ""} />
+          {/*<LogoutForm userid={userSession.userId ?? ""} />*/}
         </div>
       )}
       {userSession.userId && userSession.userType === "merc" && (
@@ -120,7 +120,7 @@ export default function ItemsCarouselPage() {
           >
             Profile
           </button>
-          <LogoutForm userid={userSession.userId ?? ""} />
+          {/*<LogoutForm userid={userSession.userId ?? ""} />*/}
         </div>
       )}      
       {!userSession.userId && (

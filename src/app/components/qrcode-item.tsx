@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from "react";
 import React from "react";
+import crypto from 'crypto';
+import { qrcodeGen } from "../actions";
+
+export function getRandomString(length: number): string {
+  return crypto.randomBytes(length).toString('hex').slice(0, length);
+}
 
 export default function QrCodeForm() {
   const [userSession, setUserSession] = React.useState<{ userId: string | null, userType: string | null }>({ userId: null, userType: null });  
@@ -12,18 +18,56 @@ export default function QrCodeForm() {
   const [payType, setPayType] = useState("");
   const [reference, setRefence] = useState("");
 
+  const [loading, setLoading] = useState(false);
+  const [qrhash, setQrhash] = useState("");
+
   useEffect(() => {
     fetch("/api/session")
       .then(res => res.json())
       .then(data => setUserSession(data));
   }, []);
 
+  useEffect(() => {
+    const storedHash = localStorage.getItem("qrhash");
+    if (storedHash) {
+      setQrhash(storedHash);
+    } else {
+      const newHash = getRandomString(20);
+      setQrhash(newHash);
+      localStorage.setItem("qrhash", newHash);
+    }
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Redirect to /qrcodeGen with form data as query params
-    const params = new URLSearchParams({ uid, points, payType, reference }).toString();
-    window.location.href = `/qrcodeGen?${params}`;
+    setLoading(true);
+    // Prepare FormData for server action
+    const formData = new FormData();
+    formData.append("mercid", uid);
+    formData.append("points", points);
+    formData.append("payType", payType);
+    formData.append("reference", reference);
+    formData.append("qrhash", qrhash);
+    qrcodeGen(formData)
+      .then((result) => {
+        if (result && result.error) {
+          setLoading(false);
+          alert(result.error); // or set an error state
+          return;
+        }
+        setLoading(false);
+        localStorage.removeItem("qrhash");
+        // Redirect to /qrcodeGen with form data as query params
+        const params = new URLSearchParams({ uid, points, payType, reference, qrhash }).toString();
+        window.location.href = `/qrcodeGen?${params}`;
+        //router.push(`/qrcodeGen?${params}`);
+      })
+      .catch(err => {
+        console.error("Error generating QR code:", err);
+        setLoading(false);
+        window.location.href = `/qrcode`;
+        //router.push("/qrcode");
+      });
   };
 
   return (
@@ -65,7 +109,10 @@ export default function QrCodeForm() {
           required
           pattern="^[a-zA-Z0-9-_ ]*$"
         />
-        <button className="bg-blue-600 text-white p-2 rounded" type="submit">Generate</button>
+        <button className="bg-blue-600 text-white p-2 rounded" disabled={loading} type="submit"
+        >
+        {loading ? "Generating..." : "Submit"}
+        </button>
       </form>
     </div>
   );

@@ -4,11 +4,12 @@ import { db } from "@/db";
 import { users, sessiondb, transdb, balancedb, qrcodedb } from "@/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { redirect, permanentRedirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import postgres from "postgres";
 import { createSession, deleteSession } from "@/app/lib/session";
 import { decrypt } from "@/app/lib/session";
 import { cookies } from "next/headers";
+import { error } from "console";
 
 // Helper type for error return
 export type ActionResult = { error: string } | void;
@@ -16,10 +17,16 @@ export type ActionResult = { error: string } | void;
 export async function contactUsAction(formData: FormData): Promise<ActionResult> {
   try {
     const userid = formData.get("userid") as string | null;
+    const email = formData.get("email") as string | null;
     if (!userid) return { error: "User ID is required" };
+    if (!email) return { error: "User Email is required" };
     const existing = await db.select().from(users).where(eq(users.userid, userid));
     if (existing.length > 0) {
       return { error: "User ID already exists" };
+    }
+    const existEmail = await db.select().from(users).where(eq(users.email, email));
+    if (existEmail.length > 0) {
+      return { error: "User Email not valid or used." };
     }
     await db.transaction(async (tx) => {
       const usertype = "user";
@@ -98,7 +105,7 @@ export async function removeQrcode(id: number): Promise<void> {
   }
 }
 
-export async function loginAction(formData: FormData): Promise<void> {
+export async function loginAction(formData: FormData): Promise<ActionResult> {
   let shouldRedirectToProfile = false;
   let shouldRedirectToResponses = false;
   const userid = formData.get("userid") as string;
@@ -113,29 +120,35 @@ export async function loginAction(formData: FormData): Promise<void> {
       ));
     if (result.length < 1) {
       shouldRedirectToProfile = true;
+      return { error: "Invalid User ID or PIN." };
     } else {
       shouldRedirectToResponses = true;
       usertype = result[0].usertype;
     }
-  } catch (err) {
+
+  if (shouldRedirectToProfile) {
+     revalidatePath("/login");
+  }
+  if (shouldRedirectToResponses) {
+    await db.transaction(async (tx) => {
+      await createSession(userid, usertype);
+      await tx
+        .update(sessiondb)
+        .set({
+          logincount: sql`${sessiondb.logincount} + 1`,
+          lastlogin: new Date(),
+        })
+        .where(eq(sessiondb.userid, userid));
+    });
+    }
+  } 
+  catch (err) {
     if (err instanceof postgres.PostgresError) {
-      console.error(err.message);
+      return { error: err.message };
+    }
+    return { error: "Unknown error occurred" };
     }
   }
-  if (shouldRedirectToProfile) {
-    permanentRedirect("/profileCreate");
-  } else if (shouldRedirectToResponses) {
-    await createSession(userid, usertype);
-    await db
-      .update(sessiondb)
-      .set({
-        logincount: sql`${sessiondb.logincount} + 1`,
-        lastlogin: new Date(),
-      })
-      .where(eq(sessiondb.userid, userid));
-    permanentRedirect(`/`);
-  }
-}
 
 export async function logout(userid: string): Promise<void> {
   try {
@@ -349,7 +362,7 @@ export async function qrcodePay(formData: FormData): Promise<ActionResult> {
   redirect("/profileInfo/");
 }
 
-export async function qrcodeGen(formData: FormData): Promise<void> {
+export async function qrcodeGen(formData: FormData): Promise<ActionResult> {
   try {
     await db.transaction(async (tx) => {
       await tx.insert(qrcodedb).values({
@@ -367,11 +380,18 @@ export async function qrcodeGen(formData: FormData): Promise<void> {
       });
     });
   } catch (err) {
-    if (err instanceof postgres.PostgresError) {
-      console.error(err.message);
+    if (err instanceof Error) {
+      console.log("qrcodeGen ERROR: ",error(err.message));
+      return { error: err.message };
     }
+    if (err instanceof postgres.PostgresError) {
+      console.log("DB ERROR",error(err.message));
+      return { error: err.message };
+    }
+    console.log("Unknown error occurred");
+    return { error: "Unknown error occurred" };
   }
-  //redirect("/qrcodelist");
+  console.log("qrcodeGen: Success");//redirect("/qrcodelist");
 }
 
 export async function getUserSession() {
