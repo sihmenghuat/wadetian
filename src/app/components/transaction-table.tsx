@@ -20,7 +20,7 @@ export function TransactionTable({ transactions, total, page, pageSize, onPageCh
   const totalPages = Math.ceil(total / pageSize);
   return (
     <div className="w-full">
-      <h3 className="text-lg font-semibold mb-2">Recent Transactions</h3>
+      {/*<h3 className="text-lg font-semibold mb-2">Recent Transactions</h3>*/}
       <table className="min-w-full border text-sm mb-2">
         <thead>
           <tr className="bg-gray-100">

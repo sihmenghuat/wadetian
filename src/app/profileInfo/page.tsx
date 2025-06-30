@@ -130,7 +130,52 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
             height={16}
           />
           My QR Code      
-          </a>         
+          </a>
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href={`/qrcodelist`}
+//          target="_blank"
+//          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/list.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          QR Generated List      
+          </a>  
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href={`/myQrcode`}
+//          target="_blank"
+//          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/qrcode.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          Upload Media      
+          </a>  
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href={`/myQrcode`}
+//          target="_blank"
+//          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/qrcode.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          Capture Media      
+          </a>     
       </footer>
     </div>   
   );
