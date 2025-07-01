@@ -93,7 +93,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
         >
           <Image
             aria-hidden
-            src="/qrcode.svg"
+            src="/generate.svg"
             alt="Globe icon"
             width={16}
             height={16}
@@ -148,13 +148,13 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
           </a>  
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href={`/myQrcode`}
+          href={`/items/upload`}
 //          target="_blank"
 //          rel="noopener noreferrer"
         >
           <Image
             aria-hidden
-            src="/qrcode.svg"
+            src="/upload.svg"
             alt="Globe icon"
             width={16}
             height={16}
@@ -163,13 +163,13 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
           </a>  
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href={`/myQrcode`}
+          href={`/items/capture`}
 //          target="_blank"
 //          rel="noopener noreferrer"
         >
           <Image
             aria-hidden
-            src="/qrcode.svg"
+            src="/capture.svg"
             alt="Globe icon"
             width={16}
             height={16}
