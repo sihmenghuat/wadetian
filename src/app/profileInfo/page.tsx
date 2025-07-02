@@ -131,6 +131,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
           />
           My QR Code      
           </a>
+        {userType === "merc" && (
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href={`/qrcodelist`}
@@ -145,7 +146,9 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
             height={16}
           />
           QR Generated List      
-          </a>  
+          </a>
+        )}
+        {userType === "merc" && (
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href={`/items/upload`}
@@ -160,7 +163,9 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
             height={16}
           />
           Upload Media      
-          </a>  
+          </a> 
+        )}
+        {userType === "merc" && (
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href={`/items/capture`}
@@ -175,7 +180,8 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
             height={16}
           />
           Capture Media      
-          </a>     
+          </a>
+        )}   
       </footer>
     </div>   
   );

@@ -2,8 +2,12 @@
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import "./video.css";
+import React from "react";
+import { permanentRedirect } from "next/navigation";
+import Link from "next/link";
 
 export default function ItemCapturePage() {
+  const [userSession, setUserSession] = React.useState<{ userId: string | null, userType: string | null }>({ userId: null, userType: null });  
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -22,38 +26,59 @@ export default function ItemCapturePage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   useEffect(() => {
-  if (streaming) {
-    console.log("Streaming is true, rendering video element");
-  }
+    fetch("/api/session")
+      .then(res => res.json())
+      .then(data => setUserSession(data));
+  }, []);
+
+  useEffect(() => {
+    // Only redirect if session is loaded and user is not merc
+    if (userSession.userId && userSession.userType !== "merc") {
+      permanentRedirect(`/profileInfo`);
+    }
+  }, [userSession]);
+
+  useEffect(() => {
+    if (streaming) {
+      console.log("Streaming is true, rendering video element");
+    }
   }, [streaming]);
 
   useEffect(() => {
-  if (streaming && videoRef.current && mediaStreamRef.current) {
-    videoRef.current.srcObject = mediaStreamRef.current;
-    videoRef.current.play();
-    console.log("Camera stream assigned to video element");
-  }
-}, [streaming]);
+    if (streaming && videoRef.current && mediaStreamRef.current) {
+      videoRef.current.srcObject = mediaStreamRef.current;
+      videoRef.current.play();
+      console.log("Camera stream assigned to video element");
+    }
+  }, [streaming]);
 
-async function startCamera(type: "image" | "video") {
-  setMediaType(type);
-  if (mediaStreamRef.current) {
-    mediaStreamRef.current.getTracks().forEach(track => track.stop());
+  if (userSession.userId === null && userSession.userType === null) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <span className="text-lg text-gray-500">Checking session...</span>
+      </div>
+    );
   }
-  // Check if running in browser and mediaDevices is available
-  if (
-    typeof navigator === "undefined" ||
-    !navigator.mediaDevices ||
-    !navigator.mediaDevices.getUserMedia
-  ) {
-    setMessage("Camera access is not supported in this environment.");
-    return;
+  
+  async function startCamera(type: "image" | "video") {
+    setMediaType(type);
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+    }
+    // Check if running in browser and mediaDevices is available
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+      setMessage("Camera access is not supported in this environment.");
+      return;
+    }
+    const constraints = { video: true, audio: type === "video" };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    mediaStreamRef.current = stream;
+    setStreaming(true);
   }
-  const constraints = { video: true, audio: type === "video" };
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
-  mediaStreamRef.current = stream;
-  setStreaming(true);
-}
 
   function stopCamera() {
     if (mediaStreamRef.current) {
@@ -105,9 +130,14 @@ async function startCamera(type: "image" | "video") {
     }
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+    const { name, value, files } = e.target as never;
+    if (name === "file" && files && files[0]) {
+      setForm(f => ({ ...f, file: files[0] }));
+      setPreview(URL.createObjectURL(files[0]));
+    } else {
+      setForm(f => ({ ...f, [name]: value }));
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -135,77 +165,95 @@ async function startCamera(type: "image" | "video") {
   }
 
   return (
-    <div>
-      <h1>Capture Item</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="flex flex-col justify-center items-center p-5 min-h-screen bg-white rounded shadow-md">
+      <h1 className="text-2xl font-bold mb-4">Capture Media</h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full max-w-md bg-gray-50 p-6 rounded shadow">
         <input
           name="name"
           value={form.name}
           onChange={handleChange}
           placeholder="Name"
           required
+          className="p-2 border rounded"
         />
         <textarea
           name="description"
           value={form.description}
           onChange={handleChange}
           placeholder="Description"
+          className="p-2 border rounded"
         />
-        <input
+        <label htmlFor="type-select" className="font-semibold">Type</label>
+        <select
+          id="type-select"
           name="type"
           value={form.type}
           onChange={handleChange}
-          placeholder="Type"
-        />
+          required
+          className="p-2 border rounded"
+        >
+          <option value="" disabled>Select Type</option>
+          <option value="Adverts">Adverts</option>
+          <option value="Reroute">Reroute</option>
+          <option value="Feedback">Feedback</option>
+        </select>
+        <label htmlFor="mercid" className="font-semibold">Merchant ID</label>
         <input
           name="mercid"
-          value={form.mercid}
-          onChange={handleChange}
+          id="mercid"
           placeholder="Merchant ID"
+          title="Merchant ID"
+          value={userSession.userId ?? ""}
+          disabled
+          required
+          className="p-2 border rounded"
         />
-        <div>
-          <button type="button" onClick={() => startCamera("image")}>
-            Capture Photo
-          </button>
-          <button type="button" onClick={() => startCamera("video")}>
-            Capture Video
-          </button>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => startCamera("image")} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 transition">Capture Photo</button>
+          <button type="button" onClick={() => startCamera("video")} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 transition">Capture Video</button>
         </div>
         {streaming && (
-          <div>
-            <video ref={videoRef} autoPlay playsInline className="video-preview" />
+          <div className="flex flex-col items-center my-3">
+            <video ref={videoRef} autoPlay playsInline className="video-preview mb-2 rounded shadow" width={320} height={240} />
             {mediaType === "image" ? (
-              <button type="button" onClick={capturePhoto}>
-                Take Photo
-              </button>
+              <button type="button" onClick={capturePhoto} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700 transition mb-2">Take Photo</button>
             ) : (
               <>
-                <button type="button" onClick={startVideoRecording}>
-                  Start Recording
-                </button>
-                <button type="button" onClick={stopVideoRecording}>
-                  Stop Recording
-                </button>
+                <button type="button" onClick={startVideoRecording} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700 transition mb-2">Start Recording</button>
+                <button type="button" onClick={stopVideoRecording} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700 transition mb-2">Stop Recording</button>
               </>
             )}
-            <button type="button" onClick={stopCamera}>
-              Stop Camera
-            </button>
+            <button type="button" onClick={stopCamera} className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-600 transition">Stop Camera</button>
           </div>
         )}
         <canvas ref={canvasRef} className="hidden-canvas" />
         {preview && (
-          <div>
+          <div className="flex flex-col items-center my-3">
             {mediaType === "image" ? (
-              <Image src={preview} alt="Preview" width={320} height={240} />
+              <Image src={preview} alt="Preview" width={320} height={240} className="rounded shadow" />
             ) : (
-              <video src={preview} controls width={320} height={240} />
+              <video src={preview} controls width={320} height={240} className="rounded shadow" />
             )}
           </div>
         )}
-        <button type="submit">Submit</button>
+        <button type="submit" className="bg-blue-700 text-white p-2 rounded hover:bg-blue-900 transition">Submit</button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <p className="mt-4 text-green-600 font-semibold">{message}</p>}
+      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+        <Link
+          className="flex items-center gap-2 text-center underline font-semibold text-lg"
+          href={`/profileInfo`}
+        >
+          <Image
+          aria-hidden
+          src="/arrow-left.svg"
+          alt="Globe icon"
+          width={16}
+          height={16}
+          />
+          Back
+        </Link>
+    </footer>
     </div>
   );
 }

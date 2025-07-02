@@ -6,11 +6,15 @@ import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { permanentRedirect } from "next/navigation";
 
 export default function QrCodeGenConfirm() {
   const [userSession, setUserSession] = React.useState<{ userId: string | null, userType: string | null }>({ userId: null, userType: null });  
  
   const searchParams = useSearchParams();
+  if (!userSession || userSession.userType !== "merc") {
+    permanentRedirect(`/profileInfo`);
+  }
 
 useEffect(() => {
   fetch("/api/session")
