@@ -8,6 +8,7 @@ interface Transaction {
   transdesc: string;
   transdate: string;
   transamt: number;
+  hashid: string;
 }
 
 interface Props {

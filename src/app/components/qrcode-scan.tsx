@@ -147,9 +147,13 @@ useEffect(() => {
       const fd = new FormData();
       Object.entries(merged).forEach(([key, value]) => {
         fd.append(key, value as string);
+        console.log(`FormData: ${key} = ${value}`);
       });
       if (formData.payType === "Collect") {
-        await qrcodeCollect(fd);
+        const result = await qrcodeCollect(fd);
+        if (result && result.error) {
+          setError(result.error);
+          }        
       };
       if (formData.payType === "Pay") {
         const result = await qrcodePay(fd);
@@ -210,7 +214,7 @@ useEffect(() => {
               title="User/Merchant ID"
               readOnly
               disabled
-            />
+            />          
             <input
               className="border p-2 rounded"
               type="number"

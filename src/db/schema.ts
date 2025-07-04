@@ -82,6 +82,7 @@ export const transdb = pgTable("transdb", {
     transdesc: text("reference").notNull(),
     transdate: timestamp("transdate", { withTimezone: true }).notNull().defaultNow(),
     transamt: integer("transamt").notNull().default(0),
+    hashid: text("hashid"),
 });
 
 export const balancedb = pgTable("balancedb",

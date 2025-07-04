@@ -6,6 +6,7 @@ interface Transaction {
   transdesc: string;
   transdate: string;
   transamt: number;
+  hashid: string;
 }
 
 interface Props {
@@ -37,7 +38,7 @@ export function TransactionTable({ transactions, total, page, pageSize, onPageCh
             transactions.map(tx => (
               <tr key={tx.id}>
                 <td className="border px-2 py-1">{new Date(tx.transdate).toLocaleString()}</td>
-                <td className="border px-2 py-1">{tx.transdesc}</td>
+                <td className="border px-2 py-1">{tx.transdesc} {tx.hashid}</td>
                 <td className="border px-2 py-1 text-right">{tx.transamt}</td>
                 <td className="border px-2 py-1">{tx.xid}</td>
               </tr>

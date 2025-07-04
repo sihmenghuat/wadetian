@@ -7,6 +7,7 @@ import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
 import FilterToggle from "./FilterToggle";
+import { DeleteQrcodeButton } from "./DeleteQrcodeButton";
 
 function getDefaultDates() {
   const now = new Date();
@@ -60,6 +61,7 @@ export default async function QrcodelistPage({ searchParams }: { searchParams?: 
                   <th className="px-2 py-1 border">Created At</th>
                   <th className="px-2 py-1 border">Status</th>
                   <th className="px-2 py-1 border">Count</th>
+                  <th className="px-2 py-1 border">Last Updated</th>
                 </tr>
               </thead>
               <tbody>
@@ -80,7 +82,20 @@ export default async function QrcodelistPage({ searchParams }: { searchParams?: 
                         : '-'}
                     </td>
                     <td className="border px-2 py-1">{resp.status ?? '-'}</td>
-                    <td className="border px-2 py-1">{resp.redeemCnt}</td>
+                    <td className="border px-2 py-1">{resp.redeemCnt}</td>                    
+                    <td className="border px-2 py-1">
+                      {resp.status === "active" ? (
+                        <DeleteQrcodeButton id={resp.id} />
+                      ) : (
+                          <span>
+                            {new Date(
+                              typeof resp.updatedAt === 'string'
+                                ? resp.updatedAt + 'Z'
+                                : resp.updatedAt
+                            ).toLocaleString('en-SG', { timeZone: 'Asia/Singapore' })}
+                          </span>
+                        )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

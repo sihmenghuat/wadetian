@@ -205,7 +205,7 @@ export async function getQrcode(hashid: string) {
     .where(eq(qrcodedb.hashid, hashid));
 }
 
-export async function qrcodeCollect(formData: FormData): Promise<void> {
+export async function qrcodeCollect(formData: FormData): Promise<ActionResult> {
   try {
     await db.transaction(async (tx) => {
       await tx.insert(transdb).values({
@@ -213,12 +213,14 @@ export async function qrcodeCollect(formData: FormData): Promise<void> {
         xid: formData.get("mercid") as string,
         transdesc: formData.get("reference") as string,
         transamt: Number(formData.get("points")),
+        hashid: formData.get("hashid") as string,
       });
       await tx.insert(transdb).values({
         userid: formData.get("mercid") as string,
         xid: formData.get("userid") as string,
         transdesc: formData.get("reference") as string,
         transamt: Number(formData.get("points")) * -1,
+        hashid: formData.get("hashid") as string,
       });
       const result = await tx
         .update(balancedb)
@@ -258,9 +260,14 @@ export async function qrcodeCollect(formData: FormData): Promise<void> {
       }
     });
   } catch (err) {
-    if (err instanceof postgres.PostgresError) {
-      console.error("qrcodeCollect:", err.message);
+    if (err instanceof Error) {
+      return { error: err.message };
     }
+    if (err instanceof postgres.PostgresError) {
+      console.error(err.message);
+      return { error: err.message };
+    }
+    return { error: "Unknown error occurred" };
   }
   redirect("/profileInfo/");
 }
@@ -346,12 +353,14 @@ export async function qrcodePay(formData: FormData): Promise<ActionResult> {
         xid: formData.get("mercid") as string,
         transdesc: formData.get("reference") as string,
         transamt: Number(formData.get("points")) * -1,
+        hashid: formData.get("hashid") as string,
       });
       await tx.insert(transdb).values({
         userid: formData.get("mercid") as string,
         xid: formData.get("userid") as string,
         transdesc: formData.get("reference") as string,
         transamt: Number(formData.get("points")),
+        hashid: formData.get("hashid") as string,
       });
     });
   } catch (err) {
@@ -360,6 +369,7 @@ export async function qrcodePay(formData: FormData): Promise<ActionResult> {
     }
     if (err instanceof postgres.PostgresError) {
       console.error(err.message);
+      return { error: err.message };
     }
     return { error: "Unknown error occurred" };
   }

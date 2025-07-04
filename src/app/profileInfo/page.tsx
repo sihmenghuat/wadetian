@@ -10,6 +10,7 @@ import TransactionTableClient from "@/app/components/transaction-table-client";
 import Link from "next/link";
 
 export default async function ProfileItemPage({ searchParams }: { searchParams?: { page?: string } }) {
+  const param = searchParams ? await searchParams : {};
   const cookie = (await cookies()).get("session")?.value;
   const session = await decrypt(cookie);
   console.log("Session:", session);
@@ -33,7 +34,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
   const safePageSize = Number(pageSize) || 10; // fallback to 10 if not set
   const lastPage = Math.max(1, Math.ceil(safeTotalCount / safePageSize));
   console.log("Total Count:", totalCount, "Last Page:", lastPage);
-  const page = Number(searchParams?.page) || lastPage;
+  const page = Number(param.page) || lastPage;
   console.log("Page:", page, "Last Page:", lastPage, "Count:", totalCount);
 
   return (

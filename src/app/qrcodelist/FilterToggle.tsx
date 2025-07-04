@@ -43,7 +43,7 @@ export default function FilterToggle({ filterType, filterStatus, filterFrom, fil
             <option value="active">Active</option>
             <option value="deleted">Deleted</option>
           </select>
-          <label htmlFor="from-date" className="font-semibold mt-2">From (Date):</label>
+          <label htmlFor="from-date" className="font-semibold mt-2">Created From (Date):</label>
           <input
             type="date"
             id="from-date"
