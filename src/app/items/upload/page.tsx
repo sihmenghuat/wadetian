@@ -13,6 +13,14 @@ export default function ItemUploadPage() {
     type: "",
     mercid: "",
     file: null,
+    url: "",
+    itemDescription: "",
+    price: "",
+    points: "",
+    eventDetails: "",
+    eventDateTime: "",
+    eventLocation: "",
+    qrhash: "",
   });
   const [preview, setPreview] = useState<string | null>(null);
   const [message, setMessage] = useState("");
@@ -56,13 +64,25 @@ export default function ItemUploadPage() {
     data.append("type", form.type);
     data.append("mercid", form.mercid);
     if (form.file) data.append("file", form.file);
+    if (form.qrhash) data.append("qrhash", form.qrhash);
+    if (form.type === "Url" && form.url) data.append("url", form.url);
+    if (form.type === "Menu") {
+      data.append("itemDescription", form.itemDescription);
+      data.append("price", form.price);
+      data.append("points", form.points);
+    }
+    if (form.type === "Event") {
+      data.append("eventDetails", form.eventDetails);
+      data.append("eventDateTime", form.eventDateTime);
+      data.append("eventLocation", form.eventLocation);
+    }
     const res = await fetch("/api/items/upload", {
       method: "POST",
       body: data,
     });
     const result = await res.json();
     setMessage(result.message || "");
-    if (result.success) setForm({ name: "", description: "", type: "", mercid: "", file: null });
+    if (result.success) setForm({ name: "", description: "", type: "", mercid: "", file: null, url: "", itemDescription: "", price: "", points: "", eventDetails: "", eventDateTime: "", eventLocation: "", qrhash: "" });
   }
 
   return (
@@ -71,6 +91,14 @@ export default function ItemUploadPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full max-w-md bg-gray-50 p-6 rounded shadow">
         <input name="name" placeholder="Name" value={form.name} onChange={handleChange} required className="p-2 border rounded" />
         <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} className="p-2 border rounded" />
+        <input
+          name="qrhash"
+          placeholder="QR Hash ID (optional)"
+          value={form.qrhash || ""}
+          onChange={e => setForm(f => ({ ...f, qrhash: e.target.value }))}
+          className="p-2 border rounded"
+          type="text"
+        />
         <label htmlFor="type-select" className="font-semibold">Type</label>
         <select
           id="type-select"
@@ -82,9 +110,89 @@ export default function ItemUploadPage() {
         >
           <option value="" disabled>Select Type</option>
           <option value="Adverts">Adverts</option>
-          <option value="Reroute">Reroute</option>
-          <option value="Feedback">Feedback</option>
+          <option value="Url">Reroute</option>
+          <option value="Menu">Menu Item</option>
+          <option value="Event">Event</option>
         </select>
+        {form.type === "Url" && (
+          <input
+            name="url"
+            placeholder="Enter URL for reroute"
+            value={form.url || ""}
+            onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
+            required
+            className="p-2 border rounded"
+            type="url"
+            pattern="https?://.+"
+            title="Please enter a valid URL starting with http:// or https://"
+          />
+        )}
+        {form.type === "Menu" && (
+          <>
+            <input
+              name="itemDescription"
+              placeholder="Menu Item Description"
+              value={form.itemDescription}
+              onChange={e => setForm(f => ({ ...f, itemDescription: e.target.value }))}
+              required
+              className="p-2 border rounded"
+              type="text"
+            />
+            <input
+              name="price"
+              placeholder="Price (e.g. 9.99)"
+              value={form.price}
+              onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
+              required
+              className="p-2 border rounded"
+              type="number"
+              min="0"
+              step="0.01"
+            />
+            <input
+              name="points"
+              placeholder="Redeem Points"
+              value={form.points}
+              onChange={e => setForm(f => ({ ...f, points: e.target.value }))}
+              required
+              className="p-2 border rounded"
+              type="number"
+              min="0"
+              step="1"
+            />
+          </>
+        )}
+        {form.type === "Event" && (
+          <>
+            <input
+              name="eventDetails"
+              placeholder="Event Details"
+              value={form.eventDetails}
+              onChange={e => setForm(f => ({ ...f, eventDetails: e.target.value }))}
+              required
+              className="p-2 border rounded"
+              type="text"
+            />
+            <input
+              name="eventDateTime"
+              placeholder="Event Date & Time"
+              value={form.eventDateTime}
+              onChange={e => setForm(f => ({ ...f, eventDateTime: e.target.value }))}
+              required
+              className="p-2 border rounded"
+              type="datetime-local"
+            />
+            <input
+              name="eventLocation"
+              placeholder="Event Location"
+              value={form.eventLocation}
+              onChange={e => setForm(f => ({ ...f, eventLocation: e.target.value }))}
+              required
+              className="p-2 border rounded"
+              type="text"
+            />
+          </>
+        )}
         <label htmlFor="mercid" className="font-semibold">Merchant ID</label>
         <input name="mercid" id="mercid" placeholder="Merchant ID" title="Merchant ID" value={userSession.userId ?? ""} disabled required className="p-2 border rounded" />
         <label htmlFor="file-upload" className="font-semibold">Media File</label>

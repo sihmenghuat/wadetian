@@ -95,7 +95,11 @@ export async function removeUser(id: number): Promise<void> {
 
 export async function removeQrcode(id: number): Promise<void> {
   try {
-    await db.delete(qrcodedb).where(eq(qrcodedb.id, id));
+    await db.update(qrcodedb)
+    .set({  status: "deleted",
+      updatedAt: new Date(),
+     })
+    .where(eq(qrcodedb.id, id));
     revalidatePath("/qrcodelist");
     // Optionally log: QR code deleted
   } catch (err) {

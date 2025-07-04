@@ -25,6 +25,14 @@ export const items = pgTable('items', {
   name: text('name').notNull(),
   description: text('description'),
   type: text('type').notNull(),
+  url: text('url'), // for reroute
+  qrhash: text('qrhash'), // for QR code
+  itemDescription: text('item_description'), // for feedback
+  price: doublePrecision('price').notNull().default(0),
+  points: integer('points').notNull().default(0),
+  eventDate: timestamp('event_date', { withTimezone: true }),
+  eventLocation: text('event_location'),
+  eventDetails: text('event_details'),
   mediaUrl: text('media_url'), // for picture or video
   mercid: text('mercid').notNull(),
 });

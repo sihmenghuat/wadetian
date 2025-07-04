@@ -7,6 +7,7 @@ import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
 import FilterToggle from "./FilterToggle";
+import { QrcodeList } from "../components/qrcode-list";
 
 function getDefaultDates() {
   const now = new Date();
@@ -64,24 +65,7 @@ export default async function QrcodelistPage({ searchParams }: { searchParams?: 
               </thead>
               <tbody>
                 {resps.map(resp => (
-                  <tr key={resp.id} className="text-center">
-                    <td className="border px-2 py-1">{resp.userid}</td>
-                    <td className="border px-2 py-1">{resp.hashid}</td>
-                    <td className="border px-2 py-1">{resp.points}</td>
-                    <td className="border px-2 py-1">{resp.reference}</td>
-                    <td className="border px-2 py-1">{resp.paytype}</td>
-                    <td className="border px-2 py-1">
-                      {resp.createdAt
-                        ? new Date(
-                            typeof resp.createdAt === 'string'
-                              ? resp.createdAt + 'Z'
-                              : resp.createdAt
-                          ).toLocaleString('en-SG', { timeZone: 'Asia/Singapore' })
-                        : '-'}
-                    </td>
-                    <td className="border px-2 py-1">{resp.status ?? '-'}</td>
-                    <td className="border px-2 py-1">{resp.redeemCnt}</td>
-                  </tr>
+                  <QrcodeList qrdata={resp} key={resp.id} />
                 ))}
               </tbody>
             </table>
