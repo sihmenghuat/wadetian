@@ -2,13 +2,13 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { Html5Qrcode } from "html5-qrcode";
 
-
 export default function QrCodeScan({ userid }: { userid: string }) {
   const [qrData, setQrData] = useState("");
   const [scanError, setScanError] = useState("");
   const [formData, setFormData] = useState<Record<string, string> | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const qrRegionRef = useRef<HTMLDivElement | null>(null);
@@ -24,7 +24,7 @@ useEffect(() => {
       const { Html5Qrcode } = await import("html5-qrcode");
 
       if (!qrRegionRef.current) {
-        console.warn("QR region not mounted");
+        setScanError("QR region not mounted");
         return;
       }
 
@@ -46,17 +46,11 @@ useEffect(() => {
           html5QrCode?.stop();
         },
         (errorMessage: string) => {
-          console.warn("QR Code scan error:", errorMessage);
-          setScanError(errorMessage);
+          setScanError(errorMessage || "QR Code scan error");
         }
       );
     } catch (err: unknown) {
-      console.error("Camera initialization failed:", err);
-      if (err instanceof Error) {
-        setScanError(err.message);
-      } else {
-        setScanError("Unexpected camera error");
-      }
+      setScanError(err instanceof Error ? err.message : "Camera initialization failed");
     }
   }
 
@@ -64,14 +58,20 @@ useEffect(() => {
     initCamera();
   }
 
-  return () => {
-    if (html5QrCodeRef.current) {
-      html5QrCodeRef.current.stop().catch(() => {});
-      html5QrCodeRef.current.clear();
-    }
-  };
-  }, []);
-
+return () => {
+  if (html5QrCodeRef.current) {
+    html5QrCodeRef.current.stop()
+      .catch(() => {})
+      .finally(() => {
+        try {
+          html5QrCodeRef.current?.clear();
+        } catch {
+          // Ignore errors on clear
+        }
+      });
+  }
+};
+}, []);
 
   useEffect(() => {
     if (!qrData) return;
@@ -80,59 +80,68 @@ useEffect(() => {
     try {
       parsed = JSON.parse(qrData);
     } catch {
-      // ignore parse error
+      setError("Invalid QR code format.");
+      setIsProcessing(false);
+      return;
     }
     if (parsed && parsed.userid === userid) {
-      console.log("Both ID cannot be the same...");
       setError("Both ID cannot be the same...");
       setQrData("");
+      setIsProcessing(false);
     } else if (parsed && typeof parsed === "object" && parsed.qrhash) {
       (async () => {
-        const { getQrcode } = await import("../actions");
-        const result = await getQrcode(parsed.qrhash);
-        console.log("getQrcode result", result);
-        // result is likely an array, get the first item
-        const qr = Array.isArray(result) ? result[0] : result;
-        if (qr) {
-          const merged = {
-            points: qr.points?.toString() ?? "",
-            payType: qr.paytype ?? "",
-            reference: qr.reference ?? "",
-            mercid: qr.mercid ?? "",
-            hashid: parsed.qrhash,
-          };
-          console.log("Setting formData", merged);
-          setFormData(merged);
-        } else {
-          setFormData(null);
+        try {
+          const { getQrcode } = await import("../actions");
+          const result = await getQrcode(parsed.qrhash);
+          const qr = Array.isArray(result) ? result[0] : result;
+          if (qr) {
+            const merged = {
+              points: qr.points?.toString() ?? "",
+              payType: qr.paytype ?? "",
+              reference: qr.reference ?? "",
+              mercid: qr.mercid ?? "",
+              hashid: parsed.qrhash,
+            };
+            setFormData(merged);
+          } else {
+            setFormData(null);
+            setError("QR code not found.");
+          }
+        } catch (error: unknown) {
+          setError("Failed to fetch QR code details.");
+          throw error; // Re-throw to handle in the catch block
         }
         setIsProcessing(false);
       })();
     } else if (parsed && typeof parsed === "object" && parsed.userid) {
       (async () => {
-        const { getResponses } = await import("../actions");
-        const result = await getResponses(parsed.userid);
-        console.log("getResponses result", result);
-        // result is likely an array, get the first item
-        const qr = Array.isArray(result) ? result[0] : result;
-        if (qr) {
-          const merged = {
-            points: "0",
-            payType: "Pay",
-            reference: "",
-            mercid: qr.userid ?? "",
-            hashid: "",
-          };
-          console.log("Setting formData", merged);
-          setFormData(merged);
-        } else {
-          setFormData(null);
+        try {
+          const { getResponses } = await import("../actions");
+          const result = await getResponses(parsed.userid);
+          const qr = Array.isArray(result) ? result[0] : result;
+          if (qr) {
+            const merged = {
+              points: "0",
+              payType: "Pay",
+              reference: "",
+              mercid: qr.userid ?? "",
+              hashid: "",
+            };
+            setFormData(merged);
+          } else {
+            setFormData(null);
+            setError("User not found.");
+          }
+        } catch (error: unknown) {
+          setError("Failed to fetch user details.");
+          throw error; // Re-throw to handle in the catch block
         }
-        setIsProcessing(false); // NEW
+        setIsProcessing(false);
       })();
     } else {
       setFormData(null);
-      setIsProcessing(false); 
+      setError("Invalid QR code data.");
+      setIsProcessing(false);
     }
   }, [qrData, userid]);
 
@@ -141,26 +150,36 @@ useEffect(() => {
     if (!formData) return;
 
     setError(null);
+    setSuccess(null);
     startTransition(async () => {
-      const { qrcodeCollect, qrcodePay } = await import("../actions");
-      const merged = { ...formData, userid };
-      const fd = new FormData();
-      Object.entries(merged).forEach(([key, value]) => {
-        fd.append(key, value as string);
-        console.log(`FormData: ${key} = ${value}`);
-      });
-      if (formData.payType === "Collect") {
-        const result = await qrcodeCollect(fd);
-        if (result && result.error) {
-          setError(result.error);
-          }        
-      };
-      if (formData.payType === "Pay") {
-        const result = await qrcodePay(fd);
-        if (result && result.error) {
-          setError(result.error);
+      try {
+        const { qrcodeCollect, qrcodePay } = await import("../actions");
+        const merged = { ...formData, userid };
+        const fd = new FormData();
+        Object.entries(merged).forEach(([key, value]) => {
+          fd.append(key, value as string);
+        });
+        let result;
+        if (formData.payType === "Collect") {
+          result = await qrcodeCollect(fd);
+          if (result && result.error) {
+            setError(result.error);
+          } else {
+            setSuccess("Scan Transaction Successful!");
           }
-      };
+        }
+        if (formData.payType === "Pay") {
+          result = await qrcodePay(fd);
+          if (result && result.error) {
+            setError(result.error);
+          } else {
+            setSuccess("Scan Transaction Successful!");
+          }
+        }
+      } catch (error: unknown) {
+        setError("Failed to process QR code.");
+        throw error;
+      }
     });
   }
 
@@ -238,26 +257,30 @@ useEffect(() => {
             />
             <input type="hidden" name="userid" value={userid} />
             <div className="flex flex-row w-full justify-center gap-2 mt-2">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-              disabled={isPending}
-            >
-              {isPending ? "Processing..." : "Submit"}
-            </button>
-            <button
-              type="button"
-              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition"
-              onClick={() => {
-                setQrData("");
-                setScanError("");
-                if (typeof window !== "undefined") {
-                  window.location.reload();
-                }
-              }}
-            >
-              Cancel
-            </button>
+              {!success && (
+                <>
+                  <button
+                    type="submit"
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                    disabled={isPending}
+                  >
+                    {isPending ? "Processing..." : "Submit"}
+                  </button>
+                  <button
+                    type="button"
+                    className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition"
+                    onClick={() => {
+                      setQrData("");
+                      setScanError("");
+                      if (typeof window !== "undefined") {
+                        window.location.reload();
+                      }
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
             </div>
             {error && (
               <div className="text-red-600 font-semibold mt-2">{error}</div>
@@ -283,6 +306,25 @@ useEffect(() => {
               Scan Again!
             </button>
             </div>
+            )}
+            {success && (
+              <div className="text-green-600 font-semibold mt-2 flex flex-col items-center">
+                {success}
+                <button
+                  className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                  onClick={() => {
+                    setSuccess(null);
+                    setQrData("");
+                    setScanError("");
+                    setFormData(null);
+                    if (typeof window !== "undefined") {
+                      window.location.reload();
+                    }
+                  }}
+                >
+                  Ok
+                </button>
+              </div>
             )}
           </div>
         </div>

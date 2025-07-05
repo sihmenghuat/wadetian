@@ -269,7 +269,7 @@ export async function qrcodeCollect(formData: FormData): Promise<ActionResult> {
     }
     return { error: "Unknown error occurred" };
   }
-  redirect("/profileInfo/");
+  //redirect("/profileInfo");
 }
 
 export async function qrcodePay(formData: FormData): Promise<ActionResult> {
@@ -373,7 +373,7 @@ export async function qrcodePay(formData: FormData): Promise<ActionResult> {
     }
     return { error: "Unknown error occurred" };
   }
-  redirect("/profileInfo/");
+  //redirect("/profileInfo");
 }
 
 export async function qrcodeGen(formData: FormData): Promise<ActionResult> {
