@@ -2,32 +2,32 @@
 
 import { useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-import { useEffect } from "react";
+//import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { permanentRedirect } from "next/navigation";
 
 export default function QrCodeGenConfirm() {
-  const [userSession, setUserSession] = React.useState<{ userId: string | null, userType: string | null }>({ userId: null, userType: null });  
+//  const [userSession, setUserSession] = React.useState<{ userId: string | null, userType: string | null }>({ userId: null, userType: null });  
  
   const searchParams = useSearchParams();
-  if (!userSession || userSession.userType !== "merc") {
-    permanentRedirect(`/profileInfo`);
-  }
+//  if (!userSession || userSession.userType !== "merc") {
+//    permanentRedirect(`/`);
+//  }
 
-useEffect(() => {
-  fetch("/api/session")
-    .then(res => res.json())
-    .then(data => setUserSession(data));
-}, []);
+//useEffect(() => {
+//  fetch("/api/session")
+//    .then(res => res.json())
+//    .then(data => setUserSession(data));
+//}, []);
 
   //const mercid = searchParams.get("uid") || "";
-  const mercid = userSession.userId || "";
+  const mercid = searchParams.get("mercid") || "";
   const points = searchParams.get("points") || "";
   const payType = searchParams.get("payType") || "";
   const reference = searchParams.get("reference") || "";
   const qrhash = searchParams.get("qrhash") || "";
+  const redeemType = searchParams.get("redeemType") || "once";
   console.log(qrhash);
   //  const qrValue = JSON.stringify({ mercid, points, payType, reference, qrhash });
   const qrValue = JSON.stringify({ mercid, qrhash });
@@ -42,6 +42,7 @@ useEffect(() => {
         <div><b>Points:</b> {points}</div>
         <div><b>Type:</b> {payType}</div>
         <div><b>Reference:</b> {reference}</div>
+        <div><b>Usage:</b> {redeemType === "once" ? "Once" : "Daily"}</div>
         <div><b>Hash:</b> {qrhash}</div>
       </div>
     </div>

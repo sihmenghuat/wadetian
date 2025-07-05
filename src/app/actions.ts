@@ -51,7 +51,7 @@ export async function contactUsAction(formData: FormData): Promise<ActionResult>
     }
     return { error: "Unknown error occurred" };
   }
-  redirect("/profileInfo/");
+  redirect("/profileInfo");
 }
 
 export async function contactEditAction(formData: FormData): Promise<ActionResult> {
@@ -200,7 +200,7 @@ export async function getCountTransdb(userid: string) {
 
 export async function getQrcode(hashid: string) {
   return await db
-    .select({ points: qrcodedb.points, paytype: qrcodedb.paytype, reference: qrcodedb.reference, jsondata: qrcodedb.jsondata, mercid: qrcodedb.userid })
+    .select({ points: qrcodedb.points, paytype: qrcodedb.paytype, reference: qrcodedb.reference, jsondata: qrcodedb.jsondata, mercid: qrcodedb.userid, status: qrcodedb.status })
     .from(qrcodedb)
     .where(eq(qrcodedb.hashid, hashid));
 }
@@ -222,6 +222,13 @@ export async function qrcodeCollect(formData: FormData): Promise<ActionResult> {
         transamt: Number(formData.get("points")) * -1,
         hashid: formData.get("hashid") as string,
       });
+      await tx.update(qrcodedb)
+        .set({ redeemCnt: sql`${qrcodedb.redeemCnt} + 1`,
+               updatedAt: new Date() })
+        .where(and(
+          eq(qrcodedb.userid, formData.get("mercid") as string),
+          eq(qrcodedb.status, "active" as string),
+      ));
       const result = await tx
         .update(balancedb)
         .set({
@@ -362,6 +369,13 @@ export async function qrcodePay(formData: FormData): Promise<ActionResult> {
         transamt: Number(formData.get("points")),
         hashid: formData.get("hashid") as string,
       });
+      await tx.update(qrcodedb)
+        .set({ redeemCnt: sql`${qrcodedb.redeemCnt} + 1`,
+               updatedAt: new Date() })
+        .where(and(
+          eq(qrcodedb.userid, formData.get("mercid") as string),
+          eq(qrcodedb.status, "active" as string),
+      ));
     });
   } catch (err) {
     if (err instanceof Error) {
@@ -385,11 +399,13 @@ export async function qrcodeGen(formData: FormData): Promise<ActionResult> {
         points: Number(formData.get("points")),
         reference: formData.get("reference") as string,
         paytype: formData.get("payType") as string,
+        redeemtype: (formData.get("redeemType") as string) || "once", // Store redeemType
         jsondata: JSON.stringify({
           mercid: formData.get("mercid"),
           points: formData.get("points"),
           payType: formData.get("payType"),
           reference: formData.get("reference"),
+          redeemType: formData.get("redeemType") // Add to jsondata
         }),
       });
     });

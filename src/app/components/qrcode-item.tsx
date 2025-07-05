@@ -17,6 +17,7 @@ export default function QrCodeForm() {
   const [points, setPoints] = useState("");
   const [payType, setPayType] = useState("");
   const [reference, setRefence] = useState("");
+  const [usage, setUsage] = useState("once"); // New state for Usage
 
   const [loading, setLoading] = useState(false);
   const [qrhash, setQrhash] = useState("");
@@ -48,6 +49,7 @@ export default function QrCodeForm() {
     formData.append("payType", payType);
     formData.append("reference", reference);
     formData.append("qrhash", qrhash);
+    formData.append("redeemType", usage); // Add usage to form data
     qrcodeGen(formData)
       .then((result) => {
         if (result && result.error) {
@@ -58,7 +60,7 @@ export default function QrCodeForm() {
         setLoading(false);
         localStorage.removeItem("qrhash");
         // Redirect to /qrcodeGen with form data as query params
-        const params = new URLSearchParams({ uid, points, payType, reference, qrhash }).toString();
+        const params = new URLSearchParams({ uid, points, payType, reference, qrhash, redeemType: usage }).toString();
         window.location.href = `/qrcodeGen?${params}`;
         //router.push(`/qrcodeGen?${params}`);
       })
@@ -109,6 +111,16 @@ export default function QrCodeForm() {
           required
           pattern="^[a-zA-Z0-9-_ ]*$"
         />
+        <select
+          className="border p-2 rounded"
+          value={usage}
+          onChange={e => setUsage(e.target.value)}
+          required
+          title="Usage Type"
+        >
+          <option value="once">Once</option>
+          <option value="daily">Daily</option>
+        </select>
         <button className="bg-blue-600 text-white p-2 rounded" disabled={loading} type="submit"
         >
         {loading ? "Generating..." : "Submit"}

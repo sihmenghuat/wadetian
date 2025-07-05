@@ -52,7 +52,7 @@ export default async function ProfileItemPage({ searchParams }: { searchParams?:
         <p className="text-center text-gray-500 py-4">Profile Not found.</p>
       )}
       {/* Transaction Table Client Component */}
-      <div className="w-full my-4">
+      <div className="w-full my-4 overflow-x-auto">
         <TransactionTableClient userid={userid} initialPage={page} pageSize={pageSize} />
       </div>
       <LogoutForm userid={userid} />

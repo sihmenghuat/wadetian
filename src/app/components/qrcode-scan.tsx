@@ -94,7 +94,7 @@ return () => {
           const { getQrcode } = await import("../actions");
           const result = await getQrcode(parsed.qrhash);
           const qr = Array.isArray(result) ? result[0] : result;
-          if (qr) {
+          if (qr && qr.status === "active") {
             const merged = {
               points: qr.points?.toString() ?? "",
               payType: qr.paytype ?? "",
@@ -105,7 +105,7 @@ return () => {
             setFormData(merged);
           } else {
             setFormData(null);
-            setError("QR code not found.");
+            setError("QR code not found or deleted.");
           }
         } catch (error: unknown) {
           setError("Failed to fetch QR code details.");

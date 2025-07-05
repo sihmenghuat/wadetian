@@ -58,6 +58,7 @@ export default async function QrcodelistPage({ searchParams }: { searchParams?: 
                   <th className="px-2 py-1 border">Points</th>
                   <th className="px-2 py-1 border">Reference</th>
                   <th className="px-2 py-1 border">Type</th>
+                  <th className="px-2 py-1 border">Usage</th>
                   <th className="px-2 py-1 border">Created At</th>
                   <th className="px-2 py-1 border">Status</th>
                   <th className="px-2 py-1 border">Count</th>
@@ -72,6 +73,7 @@ export default async function QrcodelistPage({ searchParams }: { searchParams?: 
                     <td className="border px-2 py-1">{resp.points}</td>
                     <td className="border px-2 py-1">{resp.reference}</td>
                     <td className="border px-2 py-1">{resp.paytype}</td>
+                    <td className="border px-2 py-1">{resp.redeemtype === "once" ? "Once" : "Daily"}</td>
                     <td className="border px-2 py-1">
                       {resp.createdAt
                         ? new Date(

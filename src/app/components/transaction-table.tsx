@@ -20,7 +20,7 @@ interface Props {
 export function TransactionTable({ transactions, total, page, pageSize, onPageChange }: Props) {
   const totalPages = Math.ceil(total / pageSize);
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-auto">
       {/*<h3 className="text-lg font-semibold mb-2">Recent Transactions</h3>*/}
       <table className="min-w-full border text-sm mb-2">
         <thead>
