@@ -198,9 +198,19 @@ export async function getCountTransdb(userid: string) {
     .where(eq(transdb.userid, userid));
 }
 
+export async function getTransdb(hashid: string, userid: string) {
+  return await db
+    .select()
+    .from(transdb)
+    .where(and(
+      eq(transdb.hashid, hashid),
+      eq(transdb.userid, userid)
+    ));
+}
+
 export async function getQrcode(hashid: string) {
   return await db
-    .select({ points: qrcodedb.points, paytype: qrcodedb.paytype, reference: qrcodedb.reference, jsondata: qrcodedb.jsondata, mercid: qrcodedb.userid, status: qrcodedb.status })
+    .select({ points: qrcodedb.points, paytype: qrcodedb.paytype, reference: qrcodedb.reference, jsondata: qrcodedb.jsondata, mercid: qrcodedb.userid, status: qrcodedb.status, usage: qrcodedb.redeemtype })
     .from(qrcodedb)
     .where(eq(qrcodedb.hashid, hashid));
 }

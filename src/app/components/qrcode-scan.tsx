@@ -91,9 +91,17 @@ return () => {
     } else if (parsed && typeof parsed === "object" && parsed.qrhash) {
       (async () => {
         try {
+          const { getTransdb } = await import("../actions");
+          const result1 = await getTransdb(parsed.qrhash, userid);
+          const qr1 = Array.isArray(result1) ? result1[0] : result1;
           const { getQrcode } = await import("../actions");
           const result = await getQrcode(parsed.qrhash);
           const qr = Array.isArray(result) ? result[0] : result;
+          if (qr1 && qr.usage === "once") {
+            setError("QR code has already been redeemed.");
+            setIsProcessing(false);
+            return;
+          }
           if (qr && qr.status === "active") {
             const merged = {
               points: qr.points?.toString() ?? "",

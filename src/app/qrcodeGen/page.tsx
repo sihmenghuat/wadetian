@@ -32,6 +32,9 @@ export default function QrCodeGenConfirm() {
   //  const qrValue = JSON.stringify({ mercid, points, payType, reference, qrhash });
   const qrValue = JSON.stringify({ mercid, qrhash });
 
+  // Detect if the request is from qrcode-item by checking for a special param
+  const fromQrcodeItem = searchParams.get("fromQrcodeItem") === "1";
+
   return (
     <main>
     <div className="flex flex-col items-center justify-center border-2 gap-5 rounded-md p-6">
@@ -47,19 +50,21 @@ export default function QrCodeGenConfirm() {
       </div>
     </div>
     <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-      <Link
-        className="flex items-center gap-2 text-center underline font-semibold text-lg"
-        href={`/qrcode`}
-      >
-        <Image
-        aria-hidden
-        src="/arrow-left.svg"
-        alt="Globe icon"
-        width={16}
-        height={16}
-        />
-        Back
-      </Link>
+      {fromQrcodeItem && (
+        <Link
+          className="flex items-center gap-2 text-center underline font-semibold text-lg"
+          href={`/qrcode`}
+        >
+          <Image
+            aria-hidden
+            src="/arrow-left.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          Back
+        </Link>
+      )}
     </footer>    
     </main>
   );

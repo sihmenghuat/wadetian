@@ -60,7 +60,15 @@ export default function QrCodeForm() {
         setLoading(false);
         localStorage.removeItem("qrhash");
         // Redirect to /qrcodeGen with form data as query params
-        const params = new URLSearchParams({ uid, points, payType, reference, qrhash, redeemType: usage }).toString();
+        const params = new URLSearchParams({
+          mercid: uid,
+          points,
+          payType,
+          reference,
+          qrhash,
+          redeemType: usage,
+          fromQrcodeItem: "1"
+        }).toString();
         window.location.href = `/qrcodeGen?${params}`;
         //router.push(`/qrcodeGen?${params}`);
       })

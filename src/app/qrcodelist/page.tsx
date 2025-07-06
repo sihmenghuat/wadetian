@@ -69,7 +69,16 @@ export default async function QrcodelistPage({ searchParams }: { searchParams?: 
                 {resps.map(resp => (
                   <tr key={resp.id} className="text-center">
                     <td className="border px-2 py-1">{resp.userid}</td>
-                    <td className="border px-2 py-1">{resp.hashid}</td>
+                    <td className="border px-2 py-1">
+                      <a
+                        href={`/qrcodeGen?uid=${encodeURIComponent(resp.userid)}&points=${encodeURIComponent(resp.points)}&payType=${encodeURIComponent(resp.paytype)}&reference=${encodeURIComponent(resp.reference)}&qrhash=${encodeURIComponent(resp.hashid)}&redeemType=${encodeURIComponent(resp.redeemtype)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline hover:text-blue-800"
+                      >
+                        {resp.hashid}
+                      </a>
+                    </td>
                     <td className="border px-2 py-1">{resp.points}</td>
                     <td className="border px-2 py-1">{resp.reference}</td>
                     <td className="border px-2 py-1">{resp.paytype}</td>
