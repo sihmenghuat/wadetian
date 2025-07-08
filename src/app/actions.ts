@@ -205,7 +205,8 @@ export async function getTransdb(hashid: string, userid: string) {
     .where(and(
       eq(transdb.hashid, hashid),
       eq(transdb.userid, userid)
-    ));
+    ))
+    .orderBy(sql`${transdb.transdate} DESC`);
 }
 
 export async function getQrcode(hashid: string) {

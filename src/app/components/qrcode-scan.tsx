@@ -102,6 +102,12 @@ return () => {
             setIsProcessing(false);
             return;
           }
+          if (qr1 && qr.usage === "daily" && qr1.transdate && new Date(qr1.transdate).toDateString() === new Date().toDateString()) {
+            setError("QR code, today already redeemed.");
+            setIsProcessing(false);
+            return;
+          }
+          console.log("QR Code Date:", qr1.transdate, "Current Date:", new Date().toDateString());          
           if (qr && qr.status === "active") {
             const merged = {
               points: qr.points?.toString() ?? "",
