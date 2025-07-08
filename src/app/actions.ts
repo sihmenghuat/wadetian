@@ -18,8 +18,15 @@ export async function contactUsAction(formData: FormData): Promise<ActionResult>
   try {
     const userid = formData.get("userid") as string | null;
     const email = formData.get("email") as string | null;
+    const key = formData.get("Key") as string | null;
+    const keyset = `gy15${new Date().getMonth() + 1}#${new Date().getDate()}8zu8^`;
+    console.log("Keyset:", keyset);
     if (!userid) return { error: "User ID is required" };
     if (!email) return { error: "User Email is required" };
+    if (formData.get("showKey") === "true" && !key) 
+      return { error: "No key provided"};
+    if (key && key !== keyset)
+      return { error: "Invalid key provided" };
     const existing = await db.select().from(users).where(eq(users.userid, userid));
     if (existing.length > 0) {
       return { error: "User ID already exists" };
@@ -29,7 +36,8 @@ export async function contactUsAction(formData: FormData): Promise<ActionResult>
       return { error: "User Email not valid or used." };
     }
     await db.transaction(async (tx) => {
-      const usertype = "user";
+      const usertype = key ? "merc" : "user";
+      const issuelimit = usertype === "merc" ? -20000 : 0;
       await tx.insert(users).values({
         userid,
         pin: formData.get("pin") as string,
@@ -37,6 +45,8 @@ export async function contactUsAction(formData: FormData): Promise<ActionResult>
         email: formData.get("email") as string,
         hobby: formData.get("hobby") as string,
         usertype: usertype,
+        balancelimit: 20000,
+        issuelimit: issuelimit,
       });
       await tx.insert(sessiondb).values({
         userid,

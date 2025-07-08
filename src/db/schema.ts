@@ -11,6 +11,8 @@ export const users = pgTable("users", {
     hobby: text("hobby"),
     points: integer("points"),
     usertype: text("usertype").notNull().default("user"),
+    issuelimit: integer("issuelimit").notNull().default(0),
+    balancelimit: integer("balancelimit").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: false }).notNull().defaultNow(),
 },

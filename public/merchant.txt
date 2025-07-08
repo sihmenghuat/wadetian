@@ -1,0 +1,10 @@
+Merchant Account
+----------------
+
+1. Write in to vegemore@gmail.com to request for the key.
+2. For free subscription, 
+   Limit for issuing points is -20,000.
+   Limit for balance is +20,000.
+   Create and maintain up to 5 media files.
+   Create and maintain up to 10 generated QR code.
+
