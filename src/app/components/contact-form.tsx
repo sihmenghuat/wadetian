@@ -15,16 +15,11 @@ async function contactUsReducer(_prevState: { error: string }, formData: FormDat
 // This component is used to create a new account by collecting user information through a form.
 export function ContactForm() {
   const [state, formAction] = React.useActionState(contactUsReducer, { error: "" });
-  const [showKey, setShowKey] = React.useState(false);
+  //const [showKey, setShowKey] = React.useState(false);
+  const [showKey, setShowKey] = React.useState(() => false);
   const keyInputRef = React.useRef<HTMLInputElement>(null);
 
   // Hide Key field after submit (success or error)
-  React.useEffect(() => {
-    if (state.error === "" && showKey) {
-      setShowKey(false);
-      if (keyInputRef.current) keyInputRef.current.value = "";
-    }
-  }, [state.error]);
 
   return (
     <form className="flex items-center flex-col gap-3" action={formAction}>
