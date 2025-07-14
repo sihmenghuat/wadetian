@@ -35,7 +35,7 @@ export const items = pgTable('items', {
   eventDate: timestamp('event_date', { withTimezone: true }),
   eventLocation: text('event_location'),
   eventDetails: text('event_details'),
-  mediaUrl: text('media_url'), // for picture or video
+  mediaUrl: text('media_url').notNull(), // for picture or video
   mercid: text('mercid').notNull(),
 });
 

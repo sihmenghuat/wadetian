@@ -26,6 +26,12 @@ export default function ItemUploadPage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    if (userSession.userId) {
+      setForm(f => ({ ...f, mercid: userSession.userId || "" }));
+    }
+  }, [userSession.userId]);
+
+  useEffect(() => {
     fetch("/api/session")
       .then(res => res.json())
       .then(data => setUserSession(data));
@@ -58,6 +64,29 @@ export default function ItemUploadPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setMessage("");
+    // Validate qrhash if present
+    if (form.qrhash) {
+      // Try to fetch QR code record from backend API
+      const qrRes = await fetch(`/api/qrcodedb?qrhash=${encodeURIComponent(form.qrhash)}`);
+      if (!qrRes.ok) {
+        setMessage("QR hash record not found.");
+        return;
+      }
+      const qrData = await qrRes.json();
+      if (!qrData || !qrData.paytype || !qrData.status) {
+        setMessage("QR hash record not found.");
+        return;
+      }
+      if (qrData.paytype !== "Pay" || qrData.status !== "active") {
+        setMessage("QR hash not PAY type or Active.");
+        return;
+      }
+      if (qrData.userid !== userSession.userId) {
+        setMessage("QR hash is invalid.");
+        return;
+      }
+    }
     const data = new FormData();
     data.append("name", form.name);
     data.append("description", form.description);
@@ -194,7 +223,7 @@ export default function ItemUploadPage() {
           </>
         )}
         <label htmlFor="mercid" className="font-semibold">Merchant ID</label>
-        <input name="mercid" id="mercid" placeholder="Merchant ID" title="Merchant ID" value={userSession.userId ?? ""} disabled required className="p-2 border rounded" />
+        <input name="mercid" id="mercid" placeholder="Merchant ID" title="Merchant ID" value={userSession.userId ?? ""} readOnly required className="p-2 border rounded" />
         <label htmlFor="file-upload" className="font-semibold">Media File</label>
         <input
           id="file-upload"

@@ -32,6 +32,11 @@ export async function POST(req: NextRequest) {
     mediaUrl = `/uploads/${filename}`;
   }
 
+  // Validate mercid and mediaUrl
+  if (!mercid || !mediaUrl) {
+    return NextResponse.json({ success: false, message: "Merchant ID and media file are required." }, { status: 400 });
+  }
+
   await db.insert(items).values({
     name,
     description,
@@ -43,7 +48,7 @@ export async function POST(req: NextRequest) {
     eventDetails: type === "Event" ? eventDetails : null,
     eventDate: type === "Event" ? new Date(eventDateTime || "") : null,
     eventLocation: type === "Event" ? eventLocation : null,
-    qrhash: type === "QrCode" ? qrhash : null,
+    qrhash,
     mercid,
     mediaUrl,
   });

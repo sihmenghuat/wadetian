@@ -23,10 +23,19 @@ export default function ItemCapturePage() {
     eventLocation: "",
     qrhash: "",
   });
+
+  // Keep form.mercid in sync with userSession.userId
+  useEffect(() => {
+    if (userSession.userId) {
+      setForm(f => ({ ...f, mercid: userSession.userId || "" }));
+    }
+  }, [userSession.userId]);
+  
   const [preview, setPreview] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [mediaType, setMediaType] = useState<"image" | "video">("image");
+  const [isRecording, setIsRecording] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -128,14 +137,17 @@ export default function ItemCapturePage() {
       setForm(f => ({ ...f, file: new File([blob], "capture.webm", { type: blob.type }) }));
       setPreview(URL.createObjectURL(blob));
       stopCamera();
+      setIsRecording(false);
     };
     recorder.start();
+    setIsRecording(true);
   }
 
   function stopVideoRecording() {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
     }
+    setIsRecording(false);
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
@@ -150,6 +162,29 @@ export default function ItemCapturePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setMessage("");
+    // Validate qrhash if present
+    if (form.qrhash) {
+      // Try to fetch QR code record from backend API
+      const qrRes = await fetch(`/api/qrcodedb?qrhash=${encodeURIComponent(form.qrhash)}`);
+      if (!qrRes.ok) {
+        setMessage("QR hash record not found.");
+        return;
+      }
+      const qrData = await qrRes.json();
+      if (!qrData || !qrData.paytype || !qrData.status) {
+        setMessage("QR hash record not found.");
+        return;
+      }
+      if (qrData.paytype !== "Pay" || qrData.status !== "active") {
+        setMessage("QR hash not PAY type or Active.");
+        return;
+      }
+      if (qrData.userid !== userSession.userId) {
+        setMessage("QR hash is invalid.");
+        return;
+      }
+    }
     const data = new FormData();
     data.append("name", form.name);
     data.append("description", form.description);
@@ -178,7 +213,7 @@ export default function ItemCapturePage() {
       name: "", 
       description: "", 
       type: "", 
-      mercid: "", 
+      mercid: userSession.userId || "",
       file: null,
       url: "",
       menuDescription: "",
@@ -320,7 +355,7 @@ export default function ItemCapturePage() {
           placeholder="Merchant ID"
           title="Merchant ID"
           value={userSession.userId ?? ""}
-          disabled
+          readOnly
           required
           className="p-2 border rounded"
         />
@@ -335,11 +370,14 @@ export default function ItemCapturePage() {
               <button type="button" onClick={capturePhoto} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700 transition mb-2">Take Photo</button>
             ) : (
               <>
-                <button type="button" onClick={startVideoRecording} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700 transition mb-2">Start Recording</button>
-                <button type="button" onClick={stopVideoRecording} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700 transition mb-2">Stop Recording</button>
+                {!isRecording && (
+                  <button type="button" onClick={startVideoRecording} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700 transition mb-2">Start Recording</button>
+                )}
+                {isRecording && (
+                  <button type="button" onClick={stopVideoRecording} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700 transition mb-2">Stop Recording</button>
+                )}
               </>
             )}
-            <button type="button" onClick={stopCamera} className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-600 transition">Stop Camera</button>
           </div>
         )}
         <canvas ref={canvasRef} className="hidden-canvas" />
