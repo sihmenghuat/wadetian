@@ -9,6 +9,8 @@ type Item = {
   description: string;
   mediaUrl?: string;
   mercid?: string;
+  url?: string;
+  type: "Url" | "Menu" | "Event" | "QrCode";
 };
 
 export default function ItemsCarouselPage() {
@@ -87,7 +89,13 @@ export default function ItemsCarouselPage() {
             }}
           >
             <div className={styles.overlayText}>
-              <h3>{item.name}</h3>
+              <h3>
+                {item.type === "Url" && item.url ? (
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">{item.name}</a>
+                ) : (
+                  item.name
+                )}
+              </h3>
               <p>{item.description}</p>
             </div>
             {item.mediaUrl && item.mediaUrl.match(/\.(mp4|webm|ogg)$/i) ? (
@@ -144,9 +152,9 @@ export default function ItemsCarouselPage() {
                   className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm cursor-pointer p-0 overflow-hidden"
                   tabIndex={-1}
                   type="button"
-                  aria-label="Coin"
+                  aria-label="Feedback"
                 >
-                  <Image src="/coin.jpeg" alt="coin" width={60} height={60} className="rounded-full w-full h-full object-cover" />
+                  <Image src="/feedback.png" alt="feedback" width={60} height={60} className="rounded-full w-full h-full object-cover" />
                 </button>
               </div>
             )}

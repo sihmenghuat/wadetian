@@ -1,6 +1,6 @@
 // db/schema.ts
-
 import { pgTable, text, integer, doublePrecision, timestamp, serial, uniqueIndex } from 'drizzle-orm/pg-core';
+import { it } from 'node:test';
 
 export const users = pgTable("users", {
     id: serial("id").primaryKey(),
@@ -37,6 +37,19 @@ export const items = pgTable('items', {
   eventDetails: text('event_details'),
   mediaUrl: text('media_url').notNull(), // for picture or video
   mercid: text('mercid').notNull(),
+  views: integer('views').notNull().default(0), // for tracking views
+  status: text('status').notNull().default('active'), // active, inactive
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const feedback = pgTable('feedback', {
+  id: serial('id').primaryKey(),
+  itemId: integer('item_id').notNull().references(() => items.id),
+  fromid: text("userid").notNull(), 
+  toid: text('name').notNull(),
+  message: text('message').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const menuItems = pgTable('menu_items', {
@@ -54,7 +67,7 @@ export const orders = pgTable('orders', {
   customerEmail: text('customer_email'),
   total: doublePrecision('total').notNull(),
   status: text('status').notNull().default('pending'),
-  createdAt: timestamp('created_at', { withTimezone: false }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
 });
 
 export const orderItems = pgTable('order_items', {
