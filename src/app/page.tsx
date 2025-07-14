@@ -29,13 +29,28 @@ export default function ItemsCarouselPage() {
     });
   };
 
-  // SSR-safe: get mercid from window.location in useEffect
+  // SSR-safe: get mercid and itemId from window.location in useEffect
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       setMercid(url.searchParams.get("mercid") || "");
     }
   }, []);
+  // Scroll to itemId if present in search params
+  useEffect(() => {
+    if (!carouselRef.current || itemList.length === 0) return;
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    const itemIdParam = url.searchParams.get("itemId");
+    if (itemIdParam) {
+      const idx = itemList.findIndex(item => String(item.id) === itemIdParam);
+      if (idx > -1) {
+        // Scroll so that the item is at the top of the carousel
+        const cardHeight = carouselRef.current.scrollHeight / itemList.length;
+        carouselRef.current.scrollTo({ top: idx * cardHeight, behavior: "smooth" });
+      }
+    }
+  }, [itemList]);
 
   // Fetch session and items
   useEffect(() => {
@@ -153,6 +168,10 @@ export default function ItemsCarouselPage() {
                   tabIndex={-1}
                   type="button"
                   aria-label="Feedback"
+                  onClick={e => {
+                    e.stopPropagation();
+                    window.location.href = `/feedback?itemid=${encodeURIComponent(item.id)}&from=${encodeURIComponent(userSession.userId ?? "")}&to=${encodeURIComponent(item.mercid ?? "")}`;
+                  }}
                 >
                   <Image src="/feedback.png" alt="feedback" width={60} height={60} className="rounded-full w-full h-full object-cover" />
                 </button>

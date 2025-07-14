@@ -46,8 +46,8 @@ export const items = pgTable('items', {
 export const feedback = pgTable('feedback', {
   id: serial('id').primaryKey(),
   itemId: integer('item_id').notNull().references(() => items.id),
-  fromid: text("userid").notNull(), 
-  toid: text('name').notNull(),
+  fromid: text("fromid").notNull(), 
+  toid: text('toid').notNull(),
   message: text('message').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
