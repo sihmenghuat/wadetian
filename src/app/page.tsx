@@ -150,7 +150,7 @@ export default function ItemsCarouselPage() {
                     {imgErrorMap[item.mercid] ? (
                       <Image src="/galney.jpg" alt="merchant" width={60} height={60} className="rounded-full w-full h-full object-cover" />
                     ) : (
-                      <Image src={`/${item.mercid}.jpg`} alt={`/${item.mercid}`} width={60} height={60} className="rounded-full w-full h-full object-cover" onError={() => handleImgError(item.mercid!)} />
+                      <Image src={`/${item.mercid}.jpg`} alt="No Logo" width={60} height={60} className="rounded-full w-full h-full object-cover" onError={() => handleImgError(item.mercid!)} />
                     )}
                   </button>
                 )}

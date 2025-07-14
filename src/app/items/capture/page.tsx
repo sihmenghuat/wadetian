@@ -30,9 +30,10 @@ export default function ItemCapturePage() {
       setForm(f => ({ ...f, mercid: userSession.userId || "" }));
     }
   }, [userSession.userId]);
-  
+
   const [preview, setPreview] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const [isRecording, setIsRecording] = useState(false);
@@ -163,26 +164,31 @@ export default function ItemCapturePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMessage("");
+    setIsError(false);
     // Validate qrhash if present
     if (form.qrhash) {
       // Try to fetch QR code record from backend API
       const qrRes = await fetch(`/api/qrcodedb?qrhash=${encodeURIComponent(form.qrhash)}`);
       if (!qrRes.ok) {
-        setMessage("QR hash record not found.");
-        return;
+      setMessage("QR hash record not found.");
+      setIsError(true);
+      return;
       }
       const qrData = await qrRes.json();
       if (!qrData || !qrData.paytype || !qrData.status) {
-        setMessage("QR hash record not found.");
-        return;
+      setMessage("QR hash record not found.");
+      setIsError(true);
+      return;
       }
       if (qrData.paytype !== "Pay" || qrData.status !== "active") {
-        setMessage("QR hash not PAY type or Active.");
-        return;
+      setMessage("QR hash not PAY type or Active.");
+      setIsError(true);
+      return;
       }
       if (qrData.userid !== userSession.userId) {
-        setMessage("QR hash is invalid.");
-        return;
+      setMessage("QR hash is invalid.");
+      setIsError(true);
+      return;
       }
     }
     const data = new FormData();
@@ -209,6 +215,7 @@ export default function ItemCapturePage() {
     });
     const result = await res.json();
     setMessage(result.message || "");
+    setIsError(!result.success);
     if (result.success) setForm({ 
       name: "", 
       description: "", 
@@ -222,7 +229,7 @@ export default function ItemCapturePage() {
       eventDetails: "",
       eventDateTime: "",
       eventLocation: "",
-      qrhash: ""
+      qrhash: "",
     });
     setPreview(null);
   }
@@ -392,7 +399,9 @@ export default function ItemCapturePage() {
         )}
         <button type="submit" className="bg-blue-700 text-white p-2 rounded hover:bg-blue-900 transition">Submit</button>
       </form>
-      {message && <p className="mt-4 text-green-600 font-semibold">{message}</p>}
+      {message && (
+        <p className={`mt-4 font-semibold ${isError ? 'text-red-600' : 'text-green-600'}`}>{message}</p>
+      )}
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
         <Link
           className="flex items-center gap-2 text-center underline font-semibold text-lg"

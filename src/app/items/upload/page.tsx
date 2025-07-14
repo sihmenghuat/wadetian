@@ -24,6 +24,7 @@ export default function ItemUploadPage() {
   });
   const [preview, setPreview] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     if (userSession.userId) {
@@ -71,19 +72,23 @@ export default function ItemUploadPage() {
       const qrRes = await fetch(`/api/qrcodedb?qrhash=${encodeURIComponent(form.qrhash)}`);
       if (!qrRes.ok) {
         setMessage("QR hash record not found.");
+        setIsError(true);
         return;
       }
       const qrData = await qrRes.json();
       if (!qrData || !qrData.paytype || !qrData.status) {
         setMessage("QR hash record not found.");
+        setIsError(true);
         return;
       }
       if (qrData.paytype !== "Pay" || qrData.status !== "active") {
         setMessage("QR hash not PAY type or Active.");
+        setIsError(true);
         return;
       }
       if (qrData.userid !== userSession.userId) {
         setMessage("QR hash is invalid.");
+        setIsError(true);
         return;
       }
     }
@@ -111,6 +116,7 @@ export default function ItemUploadPage() {
     });
     const result = await res.json();
     setMessage(result.message || "");
+    setIsError(!result.success);
     if (result.success) setForm({ name: "", description: "", type: "", mercid: "", file: null, url: "", itemDescription: "", price: "", points: "", eventDetails: "", eventDateTime: "", eventLocation: "", qrhash: "" });
   }
 
@@ -253,7 +259,9 @@ export default function ItemUploadPage() {
         )}
         <button type="submit" className="bg-blue-700 text-white p-2 rounded hover:bg-blue-900 transition">Upload</button>
       </form>
-      {message && <p className="mt-4 text-green-600 font-semibold">{message}</p>}
+      {message && (
+        <p className={`mt-4 font-semibold ${isError ? 'text-red-600' : 'text-green-600'}`}>{message}</p>
+      )}
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
         <Link
           className="flex items-center gap-2 text-center underline font-semibold text-lg"
