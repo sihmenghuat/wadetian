@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import styles from "./page.module.css";
+import { qrcodeAuto } from "./actions";
 
 type Item = {
   id: number;
@@ -11,9 +12,13 @@ type Item = {
   mercid?: string;
   url?: string;
   type: "Url" | "Menu" | "Event" | "QrCode";
+  qrhash?: string;
 };
 
 export default function ItemsCarouselPage() {
+  // State for coin action messages, keyed by item id
+  const [coinMsgMap, setCoinMsgMap] = React.useState<{ [itemId: number]: string }>({});
+  const [coinMsgErrorMap, setCoinMsgErrorMap] = React.useState<{ [itemId: number]: boolean }>({});
   // SSR-safe: get mercid from window only in useEffect
   const [mercid, setMercid] = React.useState("");
   const [userSession, setUserSession] = React.useState<{ userId: string | null, userType: string | null }>({ userId: null, userType: null });
@@ -154,15 +159,41 @@ export default function ItemsCarouselPage() {
                     )}
                   </button>
                 )}
-                {/* Coin buttons, not nested */}
-                <button
-                  className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm cursor-pointer p-0 overflow-hidden"
-                  tabIndex={-1}
-                  type="button"
-                  aria-label="Coin"
-                >
-                  <Image src="/coin.jpeg" alt="coin" width={60} height={60} className="rounded-full w-full h-full object-cover" />
-                </button>
+                {/* Coin button: show only if item.qrhash is not blank or undefined */}
+                {item.qrhash && String(item.qrhash).trim() !== "" && (
+                  <button
+                    className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm cursor-pointer p-0 overflow-hidden"
+                    tabIndex={-1}
+                    type="button"
+                    aria-label="Coin"
+                    onClick={async e => {
+                      e.stopPropagation();
+                      if (!userSession.userId || !item.mercid || !item.qrhash) return;
+                      const formData = new FormData();
+                      formData.append("userid", userSession.userId);
+                      formData.append("mercid", item.mercid);
+                      formData.append("hashid", item.qrhash);
+                      let msg = "";
+                      let isError = false;
+                      try {
+                        const result = await qrcodeAuto(formData);
+                        if (result && typeof result === "object" && "error" in result) {
+                          msg = result.error;
+                          isError = true;
+                        } else {
+                          msg = "Coin redeemed successfully!";
+                        }
+                      } catch {
+                        msg = "Server error.";
+                        isError = true;
+                      }
+                      setCoinMsgMap(prev => ({ ...prev, [item.id]: msg }));
+                      setCoinMsgErrorMap(prev => ({ ...prev, [item.id]: isError }));
+                    }}
+                  >
+                    <Image src="/coin.jpeg" alt="coin" width={60} height={60} className="rounded-full w-full h-full object-cover" />
+                  </button>
+                )}
                 <button
                   className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm cursor-pointer p-0 overflow-hidden"
                   tabIndex={-1}
@@ -175,6 +206,12 @@ export default function ItemsCarouselPage() {
                 >
                   <Image src="/feedback.png" alt="feedback" width={60} height={60} className="rounded-full w-full h-full object-cover" />
                 </button>
+              </div>
+            )}
+            {/* Coin action message below card, centered */}
+            {coinMsgMap[item.id] && (
+              <div className={`w-full text-center mt-2 font-semibold ${coinMsgErrorMap[item.id] ? 'text-red-600' : 'text-green-600'}`}>
+                {coinMsgMap[item.id]}
               </div>
             )}
           </div>

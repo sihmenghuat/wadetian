@@ -226,6 +226,102 @@ export async function getQrcode(hashid: string) {
     .where(eq(qrcodedb.hashid, hashid));
 }
 
+
+export async function qrcodeAuto(formData: FormData): Promise<ActionResult> {
+  try {
+    await db.transaction(async (tx) => {
+      const [qr] = await tx.select({ points: qrcodedb.points, paytype: qrcodedb.paytype, reference: qrcodedb.reference, jsondata: qrcodedb.jsondata, mercid: qrcodedb.userid, status: qrcodedb.status, usage: qrcodedb.redeemtype })
+        .from(qrcodedb)
+        .where(eq(qrcodedb.hashid, formData.get("hashid") as string));
+      if (!qr) {
+        throw new Error("QR code not found");
+      }
+
+      const [qr1] = await tx.select().from(transdb)
+        .where(and(
+          eq(transdb.hashid, formData.get("hashid") as string),
+          eq(transdb.userid, formData.get("userid") as string)
+        ))
+        .orderBy(sql`${transdb.transdate} DESC`).limit(1);
+
+      if (qr1 && qr.usage === "once") {
+        throw new Error("QR code has already been redeemed.");
+      }
+      if (qr1 && qr.usage === "daily" && qr1.transdate && new Date(qr1.transdate).toDateString() === new Date().toDateString()) {
+        throw new Error("QR code, today already redeemed.");
+      }
+
+      await tx.insert(transdb).values({
+        userid: formData.get("userid") as string,
+        xid: formData.get("mercid") as string,
+        transdesc: qr.reference,
+        transamt: Number(qr.points),
+        hashid: formData.get("hashid") as string,
+      });
+      await tx.insert(transdb).values({
+        userid: formData.get("mercid") as string,
+        xid: formData.get("userid") as string,
+        transdesc: qr.reference,
+        transamt: Number(qr.points) * -1,
+        hashid: formData.get("hashid") as string,
+      });
+      await tx.update(qrcodedb)
+        .set({ redeemCnt: sql`${qrcodedb.redeemCnt} + 1`,
+               updatedAt: new Date() })
+        .where(and(
+          eq(qrcodedb.userid, formData.get("mercid") as string),
+          eq(qrcodedb.status, "active" as string),
+      ));
+      const result = await tx
+        .update(balancedb)
+        .set({
+          balance: sql`${balancedb.balance} + ${Number(Number(qr.points))}`,
+          lasttransdate: new Date()
+        })
+        .where(and(
+          eq(balancedb.userid, formData.get("userid") as string),
+          eq(balancedb.issuerid, formData.get("mercid") as string)
+        ));
+      if (result.count === 0) {
+        await tx.insert(balancedb).values({
+          userid: formData.get("userid") as string,
+          issuerid: formData.get("mercid") as string,
+          balance: Number(Number(qr.points)),
+          lasttransdate: new Date(),
+        });
+      }
+      const result1 = await tx
+        .update(balancedb)
+        .set({
+          balance: sql`${balancedb.balance} - ${Number(Number(qr.points))}`,
+          lasttransdate: new Date()
+        })
+        .where(and(
+          eq(balancedb.userid, formData.get("mercid") as string),
+          eq(balancedb.issuerid, formData.get("mercid") as string)
+        ));
+      if (result1.count === 0) {
+        await tx.insert(balancedb).values({
+          userid: formData.get("mercid") as string,
+          issuerid: formData.get("mercid") as string,
+          balance: Number(Number(qr.points)) * -1,
+          lasttransdate: new Date(),
+        });
+      }
+    });
+  } catch (err) {
+    if (err instanceof Error) {
+      return { error: err.message };
+    }
+    if (err instanceof postgres.PostgresError) {
+      console.error(err.message);
+      return { error: err.message };
+    }
+    return { error: "Unknown error occurred" };
+  }
+  //redirect("/profileInfo");
+}
+
 export async function qrcodeCollect(formData: FormData): Promise<ActionResult> {
   try {
     await db.transaction(async (tx) => {
