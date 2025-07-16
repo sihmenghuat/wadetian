@@ -137,6 +137,49 @@ export default function ItemsCarouselPage() {
             ) : (
               <div className={styles.noMedia}>No Media</div>
             )}
+            {/* Buttons on far left for merchants */}
+            {userSession.userId && userSession.userType === "merc" && (
+              <div className="absolute left-5 top-1/2 -translate-y-1/2 flex flex-col items-center justify-center h-full gap-2">
+                {/* Item Edit */}
+                <button
+                  className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm cursor-pointer p-0 overflow-hidden"
+                  tabIndex={-1}
+                  type="button"
+                  aria-label="Edit"
+                  onClick={e => {
+                    e.stopPropagation();
+                    window.location.href = `/feedback?itemid=${encodeURIComponent(item.id)}&from=${encodeURIComponent(userSession.userId ?? "")}&to=${encodeURIComponent(item.mercid ?? "")}`;
+                  }}
+                >
+                  <Image src="/edit.png" alt="edit" width={60} height={60} className="rounded-full w-full h-full object-cover" />
+                </button>
+                {/* Item Delete */}
+                <button
+                  className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm cursor-pointer p-0 overflow-hidden"
+                  tabIndex={-1}
+                  type="button"
+                  aria-label="Delete"
+                  onClick={e => {
+                    e.stopPropagation();
+                    window.location.href = `/feedback?itemid=${encodeURIComponent(item.id)}&from=${encodeURIComponent(userSession.userId ?? "")}&to=${encodeURIComponent(item.mercid ?? "")}`;
+                  }}
+                >
+                  <Image src="/delete.png" alt="delete" width={60} height={60} className="rounded-full w-full h-full object-cover" />
+                </button>
+                <button
+                  className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm cursor-pointer p-0 overflow-hidden"
+                  tabIndex={-1}
+                  type="button"
+                  aria-label="Feedback"
+                  onClick={e => {
+                    e.stopPropagation();
+                    window.location.href = `/feedback?itemid=${encodeURIComponent(item.id)}&from=${encodeURIComponent(userSession.userId ?? "")}&to=${encodeURIComponent(item.mercid ?? "")}`;
+                  }}
+                >
+                  <Image src="/feedback.png" alt="feedback" width={60} height={60} className="rounded-full w-full h-full object-cover" />
+                </button>
+              </div>
+            )}            
             {/* Buttons on far right for users */}
             {userSession.userId && userSession.userType === "user" && (
               <div className="absolute right-5 top-1/2 -translate-y-1/2 flex flex-col items-center justify-center h-full gap-2">
