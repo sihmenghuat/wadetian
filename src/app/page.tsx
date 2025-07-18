@@ -148,7 +148,7 @@ export default function ItemsCarouselPage() {
                   aria-label="Edit"
                   onClick={e => {
                     e.stopPropagation();
-                    window.location.href = `/feedback?itemid=${encodeURIComponent(item.id)}&from=${encodeURIComponent(userSession.userId ?? "")}&to=${encodeURIComponent(item.mercid ?? "")}`;
+                    window.location.href = `/items/update?itemid=${encodeURIComponent(item.id)}`;
                   }}
                 >
                   <Image src="/edit.png" alt="edit" width={60} height={60} className="rounded-full w-full h-full object-cover" />
