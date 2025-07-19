@@ -66,16 +66,36 @@ export default function ItemUpdatePage() {
     }
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
     // Only fetch items after session and mercid are set
     if (userSession.userId && userSession.userType === "merc") {
       //console.log("are you here ........");
       fetch(`/api/items/getitem?itemid=${encodeURIComponent(itemid)}`)
         .then(res => res.json())
-        .then(data => setItemList(data));
+        .then(data => {
+          setItemList(data);
+          if (data.length > 0) {
+            const itemData = data[0];
+            setForm({
+              name: itemData.name || "",
+              description: itemData.description || "",
+              type: itemData.type || "",
+              mercid: itemData.mercid || "",
+              mediaUrl: itemData.mediaUrl || "",
+              url: itemData.url || "",
+              itemDescription: itemData.itemDescription || "",
+              price: itemData.price || "",
+              points: itemData.points || "",
+              eventDetails: itemData.eventDetails || "",
+              eventDateTime: itemData.eventDateTime || "",
+              eventLocation: itemData.eventLocation || "",
+              qrhash: itemData.qrhash || "",
+            });
+          }
+        });
       //console.log("end ...,desc: ",item);
     } 
-  }, [item, itemid, userSession.userId, userSession.userType]);
+  }, [itemid, userSession.userId, userSession.userType]);
   
   if (userSession.userId === null && userSession.userType === null) {
     return (
@@ -85,15 +105,22 @@ export default function ItemUpdatePage() {
     );
   }
 
- // function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
- //   const { name, value, files } = e.target as never;
- //   if (name === "file" && files && files[0]) {
- //     setForm(f => ({ ...f, file: files[0] }));
- //     setPreview(URL.createObjectURL(files[0]));
- //   } else {
- //     setForm(f => ({ ...f, [name]: value }));
- //   }
- //   }
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+    const { name, value } = e.target;
+    setForm(f => ({ ...f, [name]: value }));
+  }
+
+  // Function to get human-readable type display name
+  function getTypeDisplayName(type: string): string {
+    const typeMap: { [key: string]: string } = {
+      'Adverts': 'Adverts',
+      'Url': 'Reroute',
+      'Menu': 'Menu Item',
+      'Event': 'Event',
+      'QrCode': 'QR Code'
+    };
+    return typeMap[type] || type;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -125,6 +152,7 @@ export default function ItemUpdatePage() {
       }
     }
     const data = new FormData();
+    data.append("itemid", itemid);
     data.append("name", form.name);
     data.append("description", form.description);
     data.append("type", form.type);
@@ -156,34 +184,31 @@ export default function ItemUpdatePage() {
     <div className="flex flex-col justify-center items-center p-5 min-h-screen bg-white rounded shadow-md">
       <h2 className="text-2xl font-bold mb-4">Upload Media</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full max-w-md bg-gray-50 p-6 rounded shadow">
-        <input name="name" placeholder="Name" defaultValue={form.name} required className="p-2 border rounded" />
-        <textarea name="description" placeholder="Description" defaultValue={form.description} className="p-2 border rounded" />
+        <input name="name" placeholder="Name" value={form.name} onChange={handleChange} required className="p-2 border rounded" />
+        <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} className="p-2 border rounded" />
         <input
           name="qrhash"
           placeholder="QR Hash ID (optional)"
-          defaultValue={form.qrhash || ""}
+          value={form.qrhash || ""}
+          onChange={handleChange}
           className="p-2 border rounded"
           type="text"
         />
-        <label htmlFor="type-select" className="font-semibold">Type</label>
-        <select
-          id="type-select"
+        <label htmlFor="type-display" className="font-semibold">Type</label>
+        <input
+          id="type-display"
           name="type"
-          defaultValue={form.type}
-          required
-          className="p-2 border rounded"
-        >
-          <option value="" disabled>Select Type</option>
-          <option value="Adverts">Adverts</option>
-          <option value="Url">Reroute</option>
-          <option value="Menu">Menu Item</option>
-          <option value="Event">Event</option>
-        </select>
+          value={getTypeDisplayName(form.type)}
+          readOnly
+          className="p-2 border rounded bg-gray-100 text-gray-700"
+          placeholder="Item Type"
+        />
         {form.type === "Url" && (
           <input
             name="url"
             placeholder="Enter URL for reroute"
-            defaultValue={form.url || ""}
+            value={form.url || ""}
+            onChange={handleChange}
             required
             className="p-2 border rounded"
             type="url"
@@ -196,7 +221,8 @@ export default function ItemUpdatePage() {
             <input
               name="itemDescription"
               placeholder="Menu Item Description"
-              defaultValue={form.itemDescription}
+              value={form.itemDescription}
+              onChange={handleChange}
               required
               className="p-2 border rounded"
               type="text"
@@ -204,7 +230,8 @@ export default function ItemUpdatePage() {
             <input
               name="price"
               placeholder="Price (e.g. 9.99)"
-              defaultValue={form.price}
+              value={form.price}
+              onChange={handleChange}
               required
               className="p-2 border rounded"
               type="number"
@@ -214,7 +241,8 @@ export default function ItemUpdatePage() {
             <input
               name="points"
               placeholder="Redeem Points"
-              defaultValue={form.points}
+              value={form.points}
+              onChange={handleChange}
               required
               className="p-2 border rounded"
               type="number"
@@ -228,7 +256,8 @@ export default function ItemUpdatePage() {
             <input
               name="eventDetails"
               placeholder="Event Details"
-              defaultValue={form.eventDetails}
+              value={form.eventDetails}
+              onChange={handleChange}
               required
               className="p-2 border rounded"
               type="text"
@@ -236,7 +265,8 @@ export default function ItemUpdatePage() {
             <input
               name="eventDateTime"
               placeholder="Event Date & Time"
-              defaultValue={form.eventDateTime}
+              value={form.eventDateTime}
+              onChange={handleChange}
               required
               className="p-2 border rounded"
               type="datetime-local"
@@ -244,7 +274,8 @@ export default function ItemUpdatePage() {
             <input
               name="eventLocation"
               placeholder="Event Location"
-              defaultValue={form.eventLocation}
+              value={form.eventLocation}
+              onChange={handleChange}
               required
               className="p-2 border rounded"
               type="text"
@@ -278,7 +309,7 @@ export default function ItemUpdatePage() {
             width={260}
             height={180}
             className={styles.mediaImage}
-            //priority={idx === 0} // LCP priority for first image
+            priority // LCP priority for media image
           />
         ) : (
           <div className={styles.noMedia}>No Media</div>

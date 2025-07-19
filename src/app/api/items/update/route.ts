@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { items } from "@/db/schema";
 import { db } from "@/db/index";
+import { eq } from "drizzle-orm";
 import path from "path";
 import fs from "fs/promises";
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
+  const itemid = form.get("itemid") as string;
   const name = form.get("name") as string;
   const description = form.get("description") as string;
   const type = form.get("type") as string;
@@ -32,26 +34,50 @@ export async function POST(req: NextRequest) {
     mediaUrl = `/uploads/${filename}`;
   }
 
-  // Validate mercid and mediaUrl
-  if (!mercid || !mediaUrl) {
-    return NextResponse.json({ success: false, message: "Merchant ID and media file are required." }, { status: 400 });
+  // Validate required fields
+  if (!itemid) {
+    return NextResponse.json({ success: false, message: "Item ID is required." }, { status: 400 });
+  }
+  if (!mercid) {
+    return NextResponse.json({ success: false, message: "Merchant ID is required." }, { status: 400 });
   }
 
-  await db.insert(items).values({
-    name,
-    description,
-    type,
-    url: type === "Url" ? url : null,
-    itemDescription: type === "Menu" ? itemDescription : null,
-    price: type === "Menu" ? price : 0,
-    points: type === "Menu" ? points : 0,
-    eventDetails: type === "Event" ? eventDetails : null,
-    eventDate: type === "Event" ? new Date(eventDateTime || "") : null,
-    eventLocation: type === "Event" ? eventLocation : null,
-    qrhash,
-    mercid,
-    mediaUrl,
-  });
+  try {
+    // Check if item exists
+    const existingItem = await db.select().from(items).where(eq(items.id, parseInt(itemid, 10))).limit(1);
+    if (existingItem.length === 0) {
+      return NextResponse.json({ success: false, message: "Item not found." }, { status: 404 });
+    }
 
-  return NextResponse.json({ success: true, message: "Item uploaded successfully." });
+    // Prepare update data
+    const updateData: any = {
+      name,
+      description,
+      type,
+      url: type === "Url" ? url : null,
+      itemDescription: type === "Menu" ? itemDescription : null,
+      price: type === "Menu" ? price : 0,
+      points: type === "Menu" ? points : 0,
+      eventDetails: type === "Event" ? eventDetails : null,
+      eventDate: type === "Event" ? new Date(eventDateTime || "") : null,
+      eventLocation: type === "Event" ? eventLocation : null,
+      qrhash,
+      mercid,
+    };
+
+    // Only update mediaUrl if a new file was uploaded
+    if (mediaUrl) {
+      updateData.mediaUrl = mediaUrl;
+    }
+
+    // Update the item
+    await db.update(items)
+      .set(updateData)
+      .where(eq(items.id, parseInt(itemid, 10)));
+
+    return NextResponse.json({ success: true, message: "Item updated successfully." });
+  } catch (error) {
+    console.error("Error updating item:", error);
+    return NextResponse.json({ success: false, message: "Failed to update item." }, { status: 500 });
+  }
 }
