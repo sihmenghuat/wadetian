@@ -161,7 +161,7 @@ export default function ItemsCarouselPage() {
                   aria-label="Delete"
                   onClick={e => {
                     e.stopPropagation();
-                    window.location.href = `/feedback?itemid=${encodeURIComponent(item.id)}&from=${encodeURIComponent(userSession.userId ?? "")}&to=${encodeURIComponent(item.mercid ?? "")}`;
+                    window.location.href = `/items/delete?itemid=${encodeURIComponent(item.id)}`;
                   }}
                 >
                   <Image src="/delete.png" alt="delete" width={60} height={60} className="rounded-full w-full h-full object-cover" />
@@ -173,7 +173,7 @@ export default function ItemsCarouselPage() {
                   aria-label="Feedback"
                   onClick={e => {
                     e.stopPropagation();
-                    window.location.href = `/feedback?itemid=${encodeURIComponent(item.id)}&from=${encodeURIComponent(userSession.userId ?? "")}&to=${encodeURIComponent(item.mercid ?? "")}`;
+                    window.location.href = `/feedbackMerc?itemid=${encodeURIComponent(item.id)}&from=${encodeURIComponent(userSession.userId ?? "")}&to=${encodeURIComponent(item.mercid ?? "")}`;
                   }}
                 >
                   <Image src="/feedback.png" alt="feedback" width={60} height={60} className="rounded-full w-full h-full object-cover" />

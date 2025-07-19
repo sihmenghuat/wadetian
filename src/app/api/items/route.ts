@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db/index";
 import { items } from "@/db/schema";
-import { desc, eq, or } from "drizzle-orm";
+import { desc, eq, or, and } from "drizzle-orm";
 import { getUserSession } from "@/app/actions";
 
 export async function GET(req: Request) {
@@ -13,10 +13,17 @@ export async function GET(req: Request) {
     data = await db
       .select()
       .from(items)
-      .where(or(eq(items.mercid,mercid), eq(items.mercid,session.userId as string)))
+      .where(and(or(
+        eq(items.mercid,mercid as string),
+        eq(items.mercid,session.userId as string)
+        ),
+        eq(items.status,"active")
+      ))
       .orderBy(desc(items.id));
   } else {
-    data = await db.select().from(items).orderBy(desc(items.id));
+    data = await db.select().from(items)
+    .where(eq(items.status,"active"))
+    .orderBy(desc(items.id));
   }
   return NextResponse.json(data);
 }
